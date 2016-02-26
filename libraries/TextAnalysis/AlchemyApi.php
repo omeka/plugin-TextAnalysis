@@ -13,8 +13,6 @@ class TextAnalysis_AlchemyApi
     public function entities($text, array $options = array())
     {
         $options['text'] = $text;
-        $options['sentiment'] = 1; // default 0
-        $options['showSourceText'] = 1; // default 0
         return $this->request('/text/TextGetRankedNamedEntities', $options);
     }
 
@@ -45,7 +43,6 @@ class TextAnalysis_AlchemyApi
     public function combined($text, array $options = array())
     {
         $options['text'] = $text;
-        $options['sentiment'] = 1;
         return $this->request('/text/TextGetCombinedData', $options);
     }
 

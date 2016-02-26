@@ -30,13 +30,20 @@ class TextAnalysis_IndexController extends Omeka_Controller_AbstractActionContro
 
         $apiKey = get_option('text_analysis_alchemyapi_key');
         $alchemyApi = new TextAnalysis_AlchemyApi($apiKey);
-        $response = $alchemyApi->combined($text, array('extract' => 'entity,taxonomy,concept,keyword'));
+        $response = $alchemyApi->combined($text, array(
+            'extract' => 'entity,taxonomy,concept,keyword',
+            'sentiment' => 1,
+            'maxRetrieve' => 100,
+        ));
+        $results = json_decode($response->getBody(), true);
 
         $this->view->item = $item;
         $this->view->element = $element;
         $this->view->text = $text;
         $this->view->words = $textObj->getWords();
         $this->view->totalWords = $textObj->getTotalWords();
-        $this->view->results = json_decode($response->getBody(), true);
+        $this->view->results = $results;
+        $this->view->oversized = isset($results['warningMessage'])
+            && 'truncated-oversized-text-content' === $results['warningMessage'];
     }
 }

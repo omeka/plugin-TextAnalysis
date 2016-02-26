@@ -17,8 +17,6 @@ jQuery(window).load(function () {
     <li><a href="#keywords">Keywords</a></li>
 </ul>
 
-<h2><?php echo metadata($this->item, array('Dublin Core', 'Title')); ?></h2>
-
 <div id="overview">
     <h3>Overview</h3>
     <table>
@@ -95,7 +93,25 @@ jQuery(window).load(function () {
         <tbody>
             <?php foreach ($this->results['entities'] as $entity): ?>
             <tr>
-                <td><?php echo $entity['text']; ?></td>
+                <td><?php echo $entity['text']; ?>
+                <?php if (isset($entity['disambiguated'])): ?>
+                <ul>
+                    <li><?php echo $entity['disambiguated']['name']; ?></li>
+                    <?php if (isset($entity['disambiguated']['website'])): ?>
+                    <li><a target="_blank" href="<?php echo $entity['disambiguated']['website']; ?>">View website</li>
+                    <?php endif; ?>
+                    <?php if (isset($entity['disambiguated']['geo'])): ?>
+                    <li><a target="_blank" href="https://www.google.com/maps/place/<?php echo $entity['disambiguated']['geo']; ?>">View on map</li>
+                    <?php endif; ?>
+                    <?php if (isset($entity['disambiguated']['dbpedia'])): ?>
+                    <li><a target="_blank" href="<?php echo $entity['disambiguated']['dbpedia']; ?>">DBpedia</li>
+                    <?php endif; ?>
+                    <?php if (isset($entity['disambiguated']['yago'])): ?>
+                    <li><a target="_blank" href="<?php echo $entity['disambiguated']['yago']; ?>">YAGO</li>
+                    <?php endif; ?>
+                </ul>
+                <?php endif; ?>
+                </td>
                 <td><?php echo $entity['type']; ?></td>
                 <td><?php echo $entity['sentiment']['type']; ?></td>
                 <td><?php echo $entity['count']; ?></td>

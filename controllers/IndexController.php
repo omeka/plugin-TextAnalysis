@@ -27,13 +27,15 @@ class TextAnalysis_IndexController extends Omeka_Controller_AbstractActionContro
         $text = implode(' ', $texts); // consolidate all texts
 
         $textObj = new TextAnalysis_Text($text);
-
-        $apiKey = get_option('text_analysis_alchemyapi_key');
-        $alchemyApi = new TextAnalysis_AlchemyApi($apiKey);
-        $response = $alchemyApi->combined($text, array(
-            'extract' => 'entity,taxonomy,concept,keyword',
-            'sentiment' => 1,
-            'maxRetrieve' => 100,
+        $nluApi = new TextAnalysis_NluApi(
+            get_option('text_analysis_username'),
+            get_option('text_analysis_password')
+        );
+        $response = $nluApi->combined($text, array(
+            'entities' => array('sentiment' => true, 'emotion' => true),
+            'categories' => array(),
+            'concepts' => array(),
+            'keywords' => array('sentiment' => true, 'emotion' => true),
         ));
         $results = json_decode($response->getBody(), true);
 
@@ -43,7 +45,5 @@ class TextAnalysis_IndexController extends Omeka_Controller_AbstractActionContro
         $this->view->words = $textObj->getWords();
         $this->view->totalWords = $textObj->getTotalWords();
         $this->view->results = $results;
-        $this->view->oversized = isset($results['warningMessage'])
-            && 'truncated-oversized-text-content' === $results['warningMessage'];
     }
 }

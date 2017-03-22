@@ -12,7 +12,7 @@ jQuery(window).load(function () {
     <li><a href="#overview">Overview</a></li>
     <li><a href="#frequencies">Frequencies</a></li>
     <li><a href="#entities">Entities</a></li>
-    <li><a href="#taxonomy">Taxonomy</a></li>
+    <li><a href="#categories">Categories</a></li>
     <li><a href="#concepts">Concepts</a></li>
     <li><a href="#keywords">Keywords</a></li>
 </ul>
@@ -76,15 +76,14 @@ jQuery(window).load(function () {
 
 <div id="entities">
     <h3>Named Entities</h3>
+    <p>Find people, places, events, and other types of entities mentioned in the text. <a href="#glossary-entities">(glossary)</a></p>
     <?php if (isset($this->results['entities']) && $this->results['entities']): ?>
-    <?php if ($this->oversized): ?>
-    <p class="alert">Text is oversized. Analysis reflects first 50 kilobytes only.</p>
-    <?php endif; ?>
     <table>
         <thead>
             <tr>
                 <th>Entity</th>
                 <th>Type</th>
+                <th>Emotion</th>
                 <th>Sentiment</th>
                 <th>Count</th>
                 <th>Relevance</th>
@@ -93,81 +92,94 @@ jQuery(window).load(function () {
         <tbody>
             <?php foreach ($this->results['entities'] as $entity): ?>
             <tr>
-                <td><?php echo $entity['text']; ?>
-                <?php if (isset($entity['disambiguated'])): ?>
+                <td>
+                    <?php if (isset($entity['disambiguation'])): ?>
+                    <a target="_blank" href="<?php echo $entity['disambiguation']['dbpedia_resource']; ?>"><?php echo $entity['text']; ?></a>
+                    <?php else: ?>
+                    <?php echo $entity['text']; ?>
+                    <?php endif;  ?>
+                </td>
+                <td><?php echo $entity['type']; ?>
+                <?php if (isset($entity['disambiguation']['subtype'])): ?>
                 <ul>
-                    <li><?php echo $entity['disambiguated']['name']; ?></li>
-                    <?php if (isset($entity['disambiguated']['website'])): ?>
-                    <li><a target="_blank" href="<?php echo $entity['disambiguated']['website']; ?>">View website</li>
-                    <?php endif; ?>
-                    <?php if (isset($entity['disambiguated']['geo'])): ?>
-                    <li><a target="_blank" href="https://www.google.com/maps/place/<?php echo $entity['disambiguated']['geo']; ?>">View on map</li>
-                    <?php endif; ?>
-                    <?php if (isset($entity['disambiguated']['dbpedia'])): ?>
-                    <li><a target="_blank" href="<?php echo $entity['disambiguated']['dbpedia']; ?>">DBpedia</li>
-                    <?php endif; ?>
-                    <?php if (isset($entity['disambiguated']['yago'])): ?>
-                    <li><a target="_blank" href="<?php echo $entity['disambiguated']['yago']; ?>">YAGO</li>
-                    <?php endif; ?>
+                    <?php foreach ($entity['disambiguation']['subtype'] as $subtype): ?>
+                    <li><?php echo $subtype; ?></li>
+                    <?php endforeach; ?>
                 </ul>
                 <?php endif; ?>
                 </td>
-                <td><?php echo $entity['type']; ?></td>
-                <td><?php echo $entity['sentiment']['type']; ?></td>
+                <td><ul>
+                    <li>Sadness: <?php echo $entity['emotion']['sadness']; ?></li>
+                    <li>Joy: <?php echo $entity['emotion']['joy']; ?></li>
+                    <li>Fear: <?php echo $entity['emotion']['fear']; ?></li>
+                    <li>Disgust: <?php echo $entity['emotion']['disgust']; ?></li>
+                    <li>Anger: <?php echo $entity['emotion']['anger']; ?></li>
+                </ul></td>
+                <td><?php echo $entity['sentiment']['score']; ?></td>
                 <td><?php echo $entity['count']; ?></td>
                 <td><?php echo $entity['relevance']; ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-<!--
-    <pre><?php print_r($this->results['entities']); ?></pre>
--->
+    <h4 id="glossary-entities">Glossary</h4>
+    <dl>
+        <dt>Entity</dt>
+        <dd>Entity text</dd>
+        <dt>Type</dt>
+        <dd>Entity type</dd>
+        <dt>Emotion</dt>
+        <dd>Emotion scores ranging from 0 to 1 for sadness, joy, fear, disgust, and anger. A 0 means the text doesn't convey the emotion, and a 1 means the text definitly carries the emotion.</dd>
+        <dt>Sentiment</dt>
+        <dd>Sentiment score for the concept ranging from -1 to 1. Negative scores indicate negative sentiment, and positive scores indicate positive sentiment.</dd>
+        <dt>Count</dt>
+        <dd>Number of times the entity is mentioned in the text</dd>
+        <dt>Relevance</dt>
+        <dd>Relevance score ranging from 0 to 1. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
+    </dl>
     <?php else: ?>
     <p class="alert">No entities returned.</p>
     <?php endif; ?>
-    <p><a href="http://www.alchemyapi.com/">Text Analysis by AlchemyAPI</a></p>
+    <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
 </div>
 
-<div id="taxonomy">
-    <h3>Taxonomy</h3>
-    <?php if (isset($this->results['taxonomy']) && $this->results['taxonomy']): ?>
-    <?php if ($this->oversized): ?>
-    <p class="alert">Text is oversized. Analysis reflects first 50 kilobytes only.</p>
-    <?php endif; ?>
+<div id="categories">
+    <h3>Categories</h3>
+    <p>Categorize the text using a five-level classification hierarchy. <a href="#glossary-categories">(glossary)</a></p>
+    <?php if (isset($this->results['categories']) && $this->results['categories']): ?>
     <table>
         <thead>
             <tr>
                 <th>Label</th>
-                <th>Confident</th>
                 <th>Score</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($this->results['taxonomy'] as $taxonomy): ?>
+            <?php foreach ($this->results['categories'] as $category): ?>
             <tr>
-                <td><?php echo $taxonomy['label']; ?></td>
-                <td><?php echo isset($taxonomy['confident']) ? $taxonomy['confident'] : null; ?></td>
-                <td><?php echo $taxonomy['score']; ?></td>
+                <td><?php echo $category['label']; ?></td>
+                <td><?php echo $category['score']; ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-<!--
-    <pre><?php print_r($this->results['taxonomy']); ?></pre>
--->
+    <h4 id="glossary-categories">Glossary</h4>
+    <dl>
+        <dt>Label</dt>
+        <dd>Category label. Forward slashes separate category hierarchy levels.</dd>
+        <dt>Score</dt>
+        <dd>Categorization score ranging from 0 to 1. A 0 means it's not confident in the categorization, and a 1 means it's highly confident.</dd>
+    </dl>
     <?php else: ?>
-    <p class="alert">No taxonomy returned.</p>
+    <p class="alert">No categories returned.</p>
     <?php endif; ?>
-    <p><a href="http://www.alchemyapi.com/">Text Analysis by AlchemyAPI</a></p>
+    <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
 </div>
 
 <div id="concepts">
-    <h3>Concepts</h3>
+    <h3>General Concepts</h3>
+    <p>Identify high-level concepts that aren't necessarily directly referenced in the text. <a href="#glossary-concepts">(glossary)</a></p>
     <?php if (isset($this->results['concepts']) && $this->results['concepts']): ?>
-    <?php if ($this->oversized): ?>
-    <p class="alert">Text is oversized. Analysis reflects first 50 kilobytes only.</p>
-    <?php endif; ?>
     <table>
         <thead>
             <tr>
@@ -178,31 +190,35 @@ jQuery(window).load(function () {
         <tbody>
             <?php foreach ($this->results['concepts'] as $concept): ?>
             <tr>
-                <td><?php echo $concept['text']; ?></td>
+                <td><a target="_blank" href="<?php echo $concept['dbpedia_resource']; ?>"><?php echo $concept['text']; ?></td>
                 <td><?php echo $concept['relevance']; ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-<!--
-    <pre><?php print_r($this->results['concepts']); ?></pre>
--->
+    <h4 id="glossary-concepts">Glossary</h4>
+    <dl>
+        <dt>Concept</dt>
+        <dd>Name of the concept</dd>
+        <dt>Relevance</dt>
+        <dd>Relevance score for the concept ranging from 0 to 1. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
+    </dl>
+
     <?php else: ?>
     <p class="alert">No concepts returned.</p>
     <?php endif; ?>
-    <p><a href="http://www.alchemyapi.com/">Text Analysis by AlchemyAPI</a></p>
+    <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
 </div>
 
 <div id="keywords">
     <h3>Keywords</h3>
+    <p>Identify the important keywords in the text. <a href="#glossary-keywords">(glossary)</a></p>
     <?php if (isset($this->results['keywords']) && $this->results['keywords']): ?>
-    <?php if ($this->oversized): ?>
-    <p class="alert">Text is oversized. Analysis reflects first 50 kilobytes only.</p>
-    <?php endif; ?>
     <table>
         <thead>
             <tr>
                 <th>Keyword</th>
+                <th>Emotion</th>
                 <th>Sentiment</th>
                 <th>Relevance</th>
             </tr>
@@ -211,19 +227,38 @@ jQuery(window).load(function () {
             <?php foreach ($this->results['keywords'] as $keyword): ?>
             <tr>
                 <td><?php echo $keyword['text']; ?></td>
-                <td><?php echo $keyword['sentiment']['type']; ?></td>
+                <td>
+                    <?php if (isset($keyword['emotion'])): ?>
+                    <ul>
+                        <li>Sadness: <?php echo $keyword['emotion']['sadness']; ?></li>
+                        <li>Joy: <?php echo $keyword['emotion']['joy']; ?></li>
+                        <li>Fear: <?php echo $keyword['emotion']['fear']; ?></li>
+                        <li>Disgust: <?php echo $keyword['emotion']['disgust']; ?></li>
+                        <li>Anger: <?php echo $keyword['emotion']['anger']; ?></li>
+                    </ul>
+                    <?php endif; ?>
+                </td>
+                <td><?php echo $keyword['sentiment']['score']; ?></td>
                 <td><?php echo $keyword['relevance']; ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-<!--
-    <pre><?php print_r($this->results['keywords']); ?></pre>
--->
+    <h4 id="glossary-keywords">Glossary</h4>
+    <dl>
+        <dt>Keyword</dt>
+        <dd>Keyword text</dd>
+        <dt>Emotion</dt>
+        <dd>Emotion scores ranging from 0 to 1 for sadness, joy, fear, disgust, and anger. A 0 means the text doesn't convey the emotion, and a 1 means the text definitly carries the emotion.</dd>
+        <dt>Sentiment</dt>
+        <dd>Sentiment score for the concept ranging from -1 to 1. Negative scores indicate negative sentiment, and positive scores indicate positive sentiment.</dd>
+        <dt>Relevance</dt>
+        <dd>Keyword relevance score. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
+    </dl>
     <?php else: ?>
     <p class="alert">No keywords returned.</p>
     <?php endif; ?>
-    <p><a href="http://www.alchemyapi.com/">Text Analysis by AlchemyAPI</a></p>
+    <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
 </div>
 
 <?php echo foot(); ?>

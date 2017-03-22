@@ -3,6 +3,7 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
 {
     protected $_hooks = array(
         'uninstall',
+        'upgrade',
         'config_form',
         'config',
         'define_acl',
@@ -12,6 +13,15 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
     public function hookUninstall()
     {
         delete_option('text_analysis_alchemyapi_key');
+        delete_option('text_analysis_username');
+        delete_option('text_analysis_password');
+    }
+
+    public function hookUpgrade($args)
+    {
+        if (version_compare($args['old_version'], '1.1', '<=')) {
+            delete_option('text_analysis_alchemyapi_key');
+        }
     }
 
     public function hookConfigForm()
@@ -22,7 +32,8 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookConfig($args)
     {
-        set_option('text_analysis_alchemyapi_key', $args['post']['alchemyapi_key']);
+        set_option('text_analysis_username', $args['post']['username']);
+        set_option('text_analysis_password', $args['post']['password']);
     }
 
     public function hookDefineAcl($args)

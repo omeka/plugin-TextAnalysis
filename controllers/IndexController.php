@@ -27,15 +27,15 @@ class TextAnalysis_IndexController extends Omeka_Controller_AbstractActionContro
         $text = implode(' ', $texts); // consolidate all texts
 
         $textObj = new TextAnalysis_Text($text);
-        $nluApi = new TextAnalysis_NluApi(
+        $nluApi = new TextAnalysis_WatsonNlu(
             get_option('text_analysis_username'),
             get_option('text_analysis_password')
         );
         $response = $nluApi->combined($text, array(
-            'entities' => array('sentiment' => true, 'emotion' => true),
+            'entities' => array('sentiment' => true, 'emotion' => true, 'limit' => 100),
             'categories' => array(),
             'concepts' => array(),
-            'keywords' => array('sentiment' => true, 'emotion' => true),
+            'keywords' => array('sentiment' => true, 'emotion' => true, 'limit' => 100),
         ));
         $results = json_decode($response->getBody(), true);
 
@@ -44,6 +44,14 @@ class TextAnalysis_IndexController extends Omeka_Controller_AbstractActionContro
         $this->view->text = $text;
         $this->view->words = $textObj->getWords();
         $this->view->totalWords = $textObj->getTotalWords();
+        $this->view->uniqueWords = count($this->view->words);
+        $this->view->characterCount = mb_strlen($this->view->text);
+        $this->view->textBytes = strlen($this->view->text);
+        $this->view->textKilobytes = $this->view->textBytes / 1024;
+        // Watson NLU incurs a cost per item per feature: one item is one
+        // feature with up to 10,000 characters. This plugin uses four features.
+        // @see https://www.ibm.com/watson/developercloud/natural-language-understanding.html#pricing-block
+        $this->view->itemCostEstimate = ceil(4 * ($this->view->characterCount / 10000));
         $this->view->results = $results;
     }
 }

@@ -40,11 +40,16 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $acl = $args['acl'];
         $acl->addResource('TextAnalysis_Index');
-        $acl->allow(null, 'TextAnalysis_Index');
+        // Given that usage may incur real costs, restrict text analysis
+        // features to super and admin users.
+        $acl->allow(array('super', 'admin'), 'TextAnalysis_Index');
     }
 
     public function hookAdminItemsShowSidebar($args)
     {
+        if (!is_allowed('TextAnalysis_Index', null)) {
+            return;
+        }
         $item = $args['item'];
         $elementTexts = $item->getAllElementTextsByElement();
         $elementOptions = array();

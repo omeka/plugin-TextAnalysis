@@ -12,9 +12,9 @@ jQuery(window).load(function () {
     <li><a href="#overview">Overview</a></li>
     <li><a href="#frequencies">Frequencies</a></li>
     <li><a href="#entities">Entities</a></li>
+    <li><a href="#keywords">Keywords</a></li>
     <li><a href="#categories">Categories</a></li>
     <li><a href="#concepts">Concepts</a></li>
-    <li><a href="#keywords">Keywords</a></li>
 </ul>
 
 <div id="overview">
@@ -35,19 +35,25 @@ jQuery(window).load(function () {
             </tr>
             <tr>
                 <th>Unique Words</th>
-                <td><?php echo number_format(count($this->words)); ?></td>
+                <td><?php echo number_format($this->uniqueWords); ?></td>
             </tr>
             <tr>
                 <th>Character Count</th>
-                <td><?php echo number_format(mb_strlen($this->text)); ?></td>
+                <td><?php echo number_format($this->characterCount); ?></td>
             </tr>
             <tr>
                 <th>Text Size</th>
-                <?php $textBytes = strlen($this->text); ?>
-                <td><?php echo number_format($textBytes); ?> bytes (<?php echo number_format($textBytes / 1024, 2) ?> kilobytes)</td>
+                <td><?php echo number_format($this->textBytes); ?> bytes (<?php echo number_format($this->textKilobytes, 2) ?> kilobytes)</td>
+            </tr>
+            <tr>
+                <th>Estimated NLU Item Cost*</th>
+                <td>~<?php echo number_format($this->itemCostEstimate); ?> items</td>
             </tr>
         </tbody>
     </table>
+    <p>* Watson Natural Language Understanding (NLU) incurs a cost per item per feature:
+    one item is one feature with up to 10,000 characters. This service uses four
+    features: Entities, Keywords, Categories, and Concepts.</p>
     <h3>Text</h3>
     <div><?php echo nl2br($this->text); ?></div>
 </div>
@@ -108,13 +114,17 @@ jQuery(window).load(function () {
                 </ul>
                 <?php endif; ?>
                 </td>
-                <td><ul>
-                    <li>Sadness: <?php echo $entity['emotion']['sadness']; ?></li>
-                    <li>Joy: <?php echo $entity['emotion']['joy']; ?></li>
-                    <li>Fear: <?php echo $entity['emotion']['fear']; ?></li>
-                    <li>Disgust: <?php echo $entity['emotion']['disgust']; ?></li>
-                    <li>Anger: <?php echo $entity['emotion']['anger']; ?></li>
-                </ul></td>
+                <td>
+                    <?php if (isset($entity['emotion'])): ?>
+                    <ul>
+                        <li>Sadness: <?php echo $entity['emotion']['sadness']; ?></li>
+                        <li>Joy: <?php echo $entity['emotion']['joy']; ?></li>
+                        <li>Fear: <?php echo $entity['emotion']['fear']; ?></li>
+                        <li>Disgust: <?php echo $entity['emotion']['disgust']; ?></li>
+                        <li>Anger: <?php echo $entity['emotion']['anger']; ?></li>
+                    </ul>
+                    <?php endif; ?>
+                </td>
                 <td><?php echo $entity['sentiment']['score']; ?></td>
                 <td><?php echo $entity['count']; ?></td>
                 <td><?php echo $entity['relevance']; ?></td>
@@ -139,6 +149,57 @@ jQuery(window).load(function () {
     </dl>
     <?php else: ?>
     <p class="alert">No entities returned.</p>
+    <?php endif; ?>
+    <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
+</div>
+
+<div id="keywords">
+    <h3>Keywords</h3>
+    <p>Identify the important keywords in the text. <a href="#glossary-keywords">(glossary)</a></p>
+    <?php if (isset($this->results['keywords']) && $this->results['keywords']): ?>
+    <table>
+        <thead>
+            <tr>
+                <th>Keyword</th>
+                <th>Emotion</th>
+                <th>Sentiment</th>
+                <th>Relevance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($this->results['keywords'] as $keyword): ?>
+            <tr>
+                <td><?php echo $keyword['text']; ?></td>
+                <td>
+                    <?php if (isset($keyword['emotion'])): ?>
+                    <ul>
+                        <li>Sadness: <?php echo $keyword['emotion']['sadness']; ?></li>
+                        <li>Joy: <?php echo $keyword['emotion']['joy']; ?></li>
+                        <li>Fear: <?php echo $keyword['emotion']['fear']; ?></li>
+                        <li>Disgust: <?php echo $keyword['emotion']['disgust']; ?></li>
+                        <li>Anger: <?php echo $keyword['emotion']['anger']; ?></li>
+                    </ul>
+                    <?php endif; ?>
+                </td>
+                <td><?php echo $keyword['sentiment']['score']; ?></td>
+                <td><?php echo $keyword['relevance']; ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <h4 id="glossary-keywords">Glossary</h4>
+    <dl>
+        <dt>Keyword</dt>
+        <dd>Keyword text</dd>
+        <dt>Emotion</dt>
+        <dd>Emotion scores ranging from 0 to 1 for sadness, joy, fear, disgust, and anger. A 0 means the text doesn't convey the emotion, and a 1 means the text definitly carries the emotion.</dd>
+        <dt>Sentiment</dt>
+        <dd>Sentiment score for the concept ranging from -1 to 1. Negative scores indicate negative sentiment, and positive scores indicate positive sentiment.</dd>
+        <dt>Relevance</dt>
+        <dd>Keyword relevance score. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
+    </dl>
+    <?php else: ?>
+    <p class="alert">No keywords returned.</p>
     <?php endif; ?>
     <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
 </div>
@@ -206,57 +267,6 @@ jQuery(window).load(function () {
 
     <?php else: ?>
     <p class="alert">No concepts returned.</p>
-    <?php endif; ?>
-    <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
-</div>
-
-<div id="keywords">
-    <h3>Keywords</h3>
-    <p>Identify the important keywords in the text. <a href="#glossary-keywords">(glossary)</a></p>
-    <?php if (isset($this->results['keywords']) && $this->results['keywords']): ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Keyword</th>
-                <th>Emotion</th>
-                <th>Sentiment</th>
-                <th>Relevance</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($this->results['keywords'] as $keyword): ?>
-            <tr>
-                <td><?php echo $keyword['text']; ?></td>
-                <td>
-                    <?php if (isset($keyword['emotion'])): ?>
-                    <ul>
-                        <li>Sadness: <?php echo $keyword['emotion']['sadness']; ?></li>
-                        <li>Joy: <?php echo $keyword['emotion']['joy']; ?></li>
-                        <li>Fear: <?php echo $keyword['emotion']['fear']; ?></li>
-                        <li>Disgust: <?php echo $keyword['emotion']['disgust']; ?></li>
-                        <li>Anger: <?php echo $keyword['emotion']['anger']; ?></li>
-                    </ul>
-                    <?php endif; ?>
-                </td>
-                <td><?php echo $keyword['sentiment']['score']; ?></td>
-                <td><?php echo $keyword['relevance']; ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    <h4 id="glossary-keywords">Glossary</h4>
-    <dl>
-        <dt>Keyword</dt>
-        <dd>Keyword text</dd>
-        <dt>Emotion</dt>
-        <dd>Emotion scores ranging from 0 to 1 for sadness, joy, fear, disgust, and anger. A 0 means the text doesn't convey the emotion, and a 1 means the text definitly carries the emotion.</dd>
-        <dt>Sentiment</dt>
-        <dd>Sentiment score for the concept ranging from -1 to 1. Negative scores indicate negative sentiment, and positive scores indicate positive sentiment.</dd>
-        <dt>Relevance</dt>
-        <dd>Keyword relevance score. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
-    </dl>
-    <?php else: ?>
-    <p class="alert">No keywords returned.</p>
     <?php endif; ?>
     <p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
 </div>

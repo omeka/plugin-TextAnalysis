@@ -1,10 +1,10 @@
 <?php
 /**
- * Client for IBM's Natural Language Understanding service API.
+ * Client for IBM's Watson Natural Language Understanding service.
  *
  * @see https://www.ibm.com/watson/developercloud/natural-language-understanding.html
  */
-class TextAnalysis_NluApi
+class TextAnalysis_WatsonNlu
 {
     const ENDPOINT = 'https://gateway.watsonplatform.net/natural-language-understanding/api/v1';
     const VERSION = '2017-02-27';

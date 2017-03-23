@@ -1,6 +1,8 @@
-<p>This plugin uses IBM's <a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Natural Language Understanding</a>
-service to analyze text. You must <a href="https://www.ibm.com/watson/developercloud/doc/natural-language-understanding/getting-started.html">create an IBM Bluemix account</a>
-and enter your service credentials below to use this plugin.</p>
+<p>This plugin uses the <a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Watson Natural Language Understanding</a>
+(NLU) service to analyze text. You must <a href="https://www.ibm.com/watson/developercloud/doc/natural-language-understanding/getting-started.html">create an IBM Bluemix account</a>
+and enter your service credentials below to use this plugin. Given that usage may
+incur real costs (depending on plan), text analysis is restricted to users with
+super and admin permissions.</p>
 <section class="seven columns alpha">
     <div class="field">
         <div class="two column alpha">

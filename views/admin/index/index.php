@@ -46,14 +46,15 @@ jQuery(window).load(function () {
                 <td><?php echo number_format($this->textBytes); ?> bytes (<?php echo number_format($this->textKilobytes, 2) ?> kilobytes)</td>
             </tr>
             <tr>
-                <th>Estimated NLU Item Cost*</th>
+                <th>NLU Item Cost*</th>
                 <td>~<?php echo number_format($this->itemCostEstimate); ?> items</td>
             </tr>
         </tbody>
     </table>
-    <p>* Watson Natural Language Understanding (NLU) incurs a cost per item per feature:
-    one item is one feature with up to 10,000 characters. This service uses four
-    features: Entities, Keywords, Categories, and Concepts.</p>
+    <p>* <a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Watson Natural Language Understanding</a>
+    (NLU) incurs a cost per item per feature: one item is one feature with up to
+    10,000 characters. This service uses four features: Entities, Keywords, Categories,
+    and Concepts.</p>
     <h3>Text</h3>
     <div><?php echo nl2br($this->text); ?></div>
 </div>

@@ -53,8 +53,8 @@ jQuery(window).load(function () {
     </table>
     <p>* <a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Watson Natural Language Understanding</a>
     (NLU) incurs a cost per item per feature: one item is one feature with up to
-    10,000 characters. This service uses four features: Entities, Keywords, Categories,
-    and Concepts.</p>
+    10,000 characters. This service uses up to four features: Entities, Keywords,
+    Categories, and Concepts.</p>
     <h3>Text</h3>
     <div><?php echo nl2br($this->text); ?></div>
 </div>
@@ -83,8 +83,9 @@ jQuery(window).load(function () {
 
 <div id="entities">
     <h3>Named Entities</h3>
-    <p>Find people, places, events, and other types of entities mentioned in the text. <a href="#glossary-entities">(glossary)</a></p>
+    <p>Find people, places, events, and other types of entities mentioned in the text.</p>
     <?php if (isset($this->results['entities']) && $this->results['entities']): ?>
+    <a href="#glossary-entities">Glossary</a>
     <table>
         <thead>
             <tr>
@@ -156,8 +157,9 @@ jQuery(window).load(function () {
 
 <div id="keywords">
     <h3>Keywords</h3>
-    <p>Identify the important keywords in the text. <a href="#glossary-keywords">(glossary)</a></p>
+    <p>Identify the important keywords in the text.</p>
     <?php if (isset($this->results['keywords']) && $this->results['keywords']): ?>
+    <a href="#glossary-keywords">Glossary</a>
     <table>
         <thead>
             <tr>
@@ -207,8 +209,9 @@ jQuery(window).load(function () {
 
 <div id="categories">
     <h3>Categories</h3>
-    <p>Categorize the text using a five-level classification hierarchy. <a href="#glossary-categories">(glossary)</a></p>
+    <p>Categorize the text using a five-level classification hierarchy.</p>
     <?php if (isset($this->results['categories']) && $this->results['categories']): ?>
+    <a href="#glossary-categories">Glossary</a>
     <table>
         <thead>
             <tr>
@@ -240,8 +243,9 @@ jQuery(window).load(function () {
 
 <div id="concepts">
     <h3>General Concepts</h3>
-    <p>Identify high-level concepts that aren't necessarily directly referenced in the text. <a href="#glossary-concepts">(glossary)</a></p>
+    <p>Identify high-level concepts that aren't necessarily directly referenced in the text.</p>
     <?php if (isset($this->results['concepts']) && $this->results['concepts']): ?>
+    <a href="#glossary-concepts">Glossary</a>
     <table>
         <thead>
             <tr>

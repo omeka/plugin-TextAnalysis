@@ -58,7 +58,13 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
         }
         echo $args['view']->partial('text-analysis-sidebar.php', array(
             'item' => $item,
-            'elementOptions' => $elementOptions
+            'elementOptions' => $elementOptions,
+            'features' => array(
+                'entities' => 'Entities',
+                'keywords' => 'Keywords',
+                'categories' => 'Categories',
+                'concepts' => 'Concepts',
+            ),
         ));
     }
 }

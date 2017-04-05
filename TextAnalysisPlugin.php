@@ -8,6 +8,7 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
         'config',
         'define_acl',
         'admin_items_show_sidebar',
+        'ngram_corpus_show_panel',
     );
 
     public function hookUninstall()
@@ -40,9 +41,10 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
     {
         $acl = $args['acl'];
         $acl->addResource('TextAnalysis_Index');
+        $acl->addResource('TextAnalysis_Ngram');
         // Given that usage may incur real costs, restrict text analysis
         // features to super and admin users.
-        $acl->allow(array('super', 'admin'), 'TextAnalysis_Index');
+        $acl->allow(array('super', 'admin'), array('TextAnalysis_Index', 'TextAnalysis_Ngram'));
     }
 
     public function hookAdminItemsShowSidebar($args)
@@ -59,6 +61,22 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
         echo $args['view']->partial('text-analysis-sidebar.php', array(
             'item' => $item,
             'elementOptions' => $elementOptions,
+            'features' => array(
+                'entities' => 'Entities',
+                'keywords' => 'Keywords',
+                'categories' => 'Categories',
+                'concepts' => 'Concepts',
+            ),
+        ));
+    }
+
+    public function hookNgramCorpusShowPanel($args)
+    {
+        if (!is_allowed('TextAnalysis_Index', null)) {
+            return;
+        }
+        echo $args['view']->partial('ngram-corpus-sidebar.php', array(
+            'corpus' => $args['corpus'],
             'features' => array(
                 'entities' => 'Entities',
                 'keywords' => 'Keywords',

@@ -25,4 +25,32 @@ class TextAnalysisCorpusAnalysis extends Omeka_Record_AbstractRecord
     {
         return json_decode($this->analysis, true);
     }
+
+    public function getPreviousSequenceMember()
+    {
+        $db = get_db();
+        $sql = sprintf('
+        SELECT sequence_member
+        FROM %s
+        WHERE sequence_member < ?
+        ORDER BY sequence_member DESC
+        LIMIT 1',
+        $db->TextAnalysisCorpusAnalysis
+        );
+        return $db->fetchOne($sql, array($this->sequence_member));
+    }
+
+    public function getNextSequenceMember()
+    {
+        $db = get_db();
+        $sql = sprintf('
+        SELECT sequence_member
+        FROM %s
+        WHERE sequence_member > ?
+        ORDER BY sequence_member
+        LIMIT 1',
+        $db->TextAnalysisCorpusAnalysis
+        );
+        return $db->fetchOne($sql, array($this->sequence_member));
+    }
 }

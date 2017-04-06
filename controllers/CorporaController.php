@@ -1,12 +1,56 @@
 <?php
-class TextAnalysis_CorpusController extends Omeka_Controller_AbstractActionController
+class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionController
 {
     public function indexAction()
     {
         $db = $this->_helper->db;
         $taCorpora = $db->getTable('TextAnalysisCorpus')->findAll();
 
-        $this->view->taCorpora = $taCorpora;
+        $corpusRows = array();
+        foreach ($taCorpora as $taCorpus) {
+            $corpus = $taCorpus->getCorpus();
+            $process = $taCorpus->getProcess();
+            $analyses = $taCorpus->getAnalyses();
+
+            if ('completed' === $process->status) {
+                if ($corpus->isSequenced()) {
+                    $options = array('Select to view');
+                    foreach ($analyses as $analysis) {
+                        switch ($corpus->sequence_type) {
+                            case 'month':
+                                $dateTime = DateTime::createFromFormat('Ym', $analysis->sequence_member);
+                                $optionValue = $dateTime->format('Y F');
+                                break;
+                            case 'day':
+                                $dateTime = DateTime::createFromFormat('Ymd', $analysis->sequence_member);
+                                $optionValue = $dateTime->format('Y F j');
+                                break;
+                            case 'year':
+                            case 'numeric':
+                            default:
+                                $optionValue = $analysis->sequence_member;
+                        }
+                        $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $analysis->sequence_member));
+                        $options[$url] =  $optionValue;
+                    }
+                    $analysisField = $this->view->formSelect('sequence_member', null, array('class' => 'corpus_sequence_member'), $options);
+
+                } else {
+                    $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
+                    $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
+                }
+            } else {
+                $analysisField = '[not available]';
+            }
+
+            $corpusRows[] = array(
+                'name' => link_to($corpus, 'show', $corpus->name),
+                'process' => ucwords($process->status),
+                'analysis' => $analysisField,
+            );
+        }
+
+        $this->view->corpusRows = $corpusRows;
     }
 
     public function analyzeAction()

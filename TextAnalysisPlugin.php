@@ -128,10 +128,10 @@ SQL
     {
         $acl = $args['acl'];
         $acl->addResource('TextAnalysis_Index');
-        $acl->addResource('TextAnalysis_Corpus');
+        $acl->addResource('TextAnalysis_Corpora');
         // Given that usage may incur real costs, restrict text analysis
         // features to super and admin users.
-        $acl->allow(array('super', 'admin'), array('TextAnalysis_Index', 'TextAnalysis_Corpus'));
+        $acl->allow(array('super', 'admin'), array('TextAnalysis_Index', 'TextAnalysis_Corpora'));
     }
 
     public function hookAdminItemsShowSidebar($args)
@@ -161,9 +161,9 @@ SQL
     {
         if (plugin_is_active('Ngram')) {
             $nav[] = array(
-                'label' => __('Text Analysis: Corpus'),
-                'uri' => url('text-analysis/corpus'),
-                'resource' => ('TextAnalysis_Corpus'),
+                'label' => __('Text Analysis: Corpora'),
+                'uri' => url('text-analysis/corpora'),
+                'resource' => ('TextAnalysis_Corpora'),
             );
         }
         return $nav;

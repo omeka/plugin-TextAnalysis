@@ -1,0 +1,36 @@
+<?php
+class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
+{
+    public $id;
+    public $corpus_id;
+    public $process_id;
+    public $feature_entities;
+    public $feature_keywords;
+    public $feature_categories;
+    public $feature_concepts;
+
+    /**
+     * Get the related Ngram corpus.
+     *
+     * @return NgramCorpus
+     */
+    public function getCorpus()
+    {
+        return $this->getTable('NgramCorpus')->find($this->corpus_id);
+    }
+
+    /**
+     * Get the process responsible for analyzing this corpus.
+     *
+     * @return Process
+     */
+    public function getProcess()
+    {
+        return $this->getTable('Process')->find($this->process_id);
+    }
+
+    public function getAnalyses()
+    {
+        return $this->getTable('TextAnalysisCorpusAnalysis')->findBy(array('text_analysis_corpus_id' => $this->id));
+    }
+}

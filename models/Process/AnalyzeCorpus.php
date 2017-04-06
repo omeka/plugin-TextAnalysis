@@ -1,23 +1,24 @@
 <?php
-class Process_AnalyzeNgramCorpus extends Omeka_Job_Process_AbstractProcess
+class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
 {
     public function run($args)
     {
         $db = get_db();
-        $corpus = $this->_db->getTable('NgramCorpus')->find($args['corpus_id']);
+        $taCorpus = $db->getTable('TextAnalysisCorpus')->find($args['text_analysis_corpus_id']);
+        $corpus = $taCorpus->getCorpus();
 
         // Limit analysis to the requested features.
         $features = array();
-        if (!empty($args['features']['entities'])) {
-            $features['entities'] = array('sentiment' => true, 'emotion' => true, 'limit' => 100);
+        if ($taCorpus->feature_entities) {
+            $features['entities'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
         }
-        if (!empty($args['features']['keywords'])) {
-            $features['keywords'] = array('sentiment' => true, 'emotion' => true, 'limit' => 100);
+        if ($taCorpus->feature_keywords) {
+            $features['keywords'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
         }
-        if (!empty($args['features']['categories'])) {
+        if ($taCorpus->feature_categories) {
             $features['categories'] = array();
         }
-        if (!empty($args['features']['concepts'])) {
+        if ($taCorpus->feature_concepts) {
             $features['concepts'] = array();
         }
 
@@ -36,14 +37,14 @@ class Process_AnalyzeNgramCorpus extends Omeka_Job_Process_AbstractProcess
             $db->ElementText,
             $db->quote($corpus->text_element_id, Zend_Db::INT_TYPE)
         );
-        $textAnalysisNgramCorpusSql = sprintf('
+        $insertAnalysisSql = sprintf('
             INSERT INTO %s (
-                corpus_id, sequence_member, analysis
+                text_analysis_corpus_id, sequence_member, analysis
             ) VALUES (
                 %s, ?, ?
             )',
-            $db->TextAnalysisNgramCorpus,
-            $corpus->id
+            $db->TextAnalysisCorpusAnalysis,
+            $taCorpus->id
         );
 
         $db->beginTransaction();
@@ -61,8 +62,8 @@ class Process_AnalyzeNgramCorpus extends Omeka_Job_Process_AbstractProcess
                         $itemTexts[] = $db->query($selectTextSql, $itemId)->fetchColumn(0);
                     }
                     $response = $watsonNlu->combined(implode(PHP_EOL, $itemTexts), $features);
-                    $analysis = $response->getBody();
-                    $db->query($textAnalysisNgramCorpusSql, array($sequenceMember, $analysis));
+                    $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
+                    $db->query($insertAnalysisSql, array($sequenceMember, $analysis));
                 }
             } else {
                 // Process an unsequenced corpus.
@@ -71,8 +72,8 @@ class Process_AnalyzeNgramCorpus extends Omeka_Job_Process_AbstractProcess
                     $itemTexts[] = $db->query($selectTextSql, $itemId)->fetchColumn(0);
                 }
                 $response = $watsonNlu->combined(implode(PHP_EOL, $itemTexts), $features);
-                $analysis = $response->getBody();
-                $db->query($textAnalysisNgramCorpusSql, array(null, $analysis));
+                $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
+                $db->query($insertAnalysisSql, array(null, $analysis));
             }
             $db->commit();
         } catch (Exception $e) {

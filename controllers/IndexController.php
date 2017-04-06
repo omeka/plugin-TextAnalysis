@@ -62,6 +62,9 @@ class TextAnalysis_IndexController extends Omeka_Controller_AbstractActionContro
         // feature with up to 10,000 characters.
         // @see https://www.ibm.com/watson/developercloud/natural-language-understanding.html#pricing-block
         $this->view->itemCostEstimate = ceil(count($features) * ($this->view->characterCount / 10000));
-        $this->view->results = $results;
+        $this->view->entities = isset($results['entities']) ? $results['entities'] : null;
+        $this->view->keywords = isset($results['keywords']) ? $results['keywords'] : null;
+        $this->view->categories = isset($results['categories']) ? $results['categories'] : null;
+        $this->view->concepts = isset($results['concepts']) ? $results['concepts'] : null;
     }
 }

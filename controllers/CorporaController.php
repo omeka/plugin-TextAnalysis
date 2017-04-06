@@ -53,6 +53,24 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $this->view->corpusRows = $corpusRows;
     }
 
+    public function analysisAction()
+    {
+        $db = $this->_helper->db;
+        $request = $this->getRequest();
+
+        $id = $request->getQuery('id');
+        $sequenceMember = $request->getQuery('sequence_member');
+
+        $taCorpora = $db->getTable('TextAnalysisCorpus')->find($id);
+        $analyses = $taCorpora->getAnalyses($sequenceMember);
+        $analysis = $analyses[0]->getAnalysis();
+
+        $this->view->entities = isset($analysis['entities']) ? $analysis['entities'] : null;
+        $this->view->keywords = isset($analysis['keywords']) ? $analysis['keywords'] : null;
+        $this->view->categories = isset($analysis['categories']) ? $analysis['categories'] : null;
+        $this->view->concepts = isset($analysis['concepts']) ? $analysis['concepts'] : null;
+    }
+
     public function analyzeAction()
     {
         $db = $this->_helper->db;

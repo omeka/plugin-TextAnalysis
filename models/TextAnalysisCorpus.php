@@ -29,8 +29,12 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
         return $this->getTable('Process')->find($this->process_id);
     }
 
-    public function getAnalyses()
+    public function getAnalyses($sequenceMember = null)
     {
-        return $this->getTable('TextAnalysisCorpusAnalysis')->findBy(array('text_analysis_corpus_id' => $this->id));
+        $query = array('text_analysis_corpus_id' => $this->id);
+        if ($sequenceMember) {
+            $query['sequence_member'] = $sequenceMember;
+        }
+        return $this->getTable('TextAnalysisCorpusAnalysis')->findBy($query);
     }
 }

@@ -50,7 +50,8 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $taCorpus = $db->getTable('TextAnalysisCorpus')->find($id);
         $corpus = $taCorpus->getCorpus();
         $corpusAnalyses = $taCorpus->getAnalyses();
-        $corpusAnalysis = $taCorpus->getAnalyses($sequenceMember)[0];
+        $corpusAnalysis = $taCorpus->getAnalyses($sequenceMember);
+        $corpusAnalysis = $corpusAnalysis[0];
         $analysis = $corpusAnalysis->getAnalysis();
 
         $prevLink = 'n/a';

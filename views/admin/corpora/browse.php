@@ -39,7 +39,14 @@ if ('completed' === $process->status) {
 }
 ?>
     <tr>
-        <td><?php echo link_to($corpus, 'show', $corpus->name); ?></td>
+        <td>
+            <?php echo link_to($corpus, 'show', $corpus->name); ?>
+            <ul class="action-links">
+                <?php if ('completed' === $process->status): ?>
+                <li><?php echo link_to($taCorpus, 'delete-confirm', 'Delete', array('class' => 'delete-confirm')); ?></li>
+                <?php endif; ?>
+            </ul>
+        </td>
         <td><?php echo ucwords($process->status); ?></td>
         <td><?php echo $analysisField; ?></td>
     </tr>
@@ -63,3 +70,4 @@ jQuery( document ).ready(function() {
 
 <?php endif; ?>
 
+<?php echo foot(); ?>

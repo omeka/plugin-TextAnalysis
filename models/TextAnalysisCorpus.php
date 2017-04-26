@@ -53,4 +53,14 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
                 return $sequenceMember;
         }
     }
+
+    public function getRecordUrl($action = 'show')
+    {
+        return array(
+            'module' => 'text-analysis',
+            'controller' => 'corpora',
+            'action' => $action,
+            'id' => $this->id,
+        );
+    }
 }

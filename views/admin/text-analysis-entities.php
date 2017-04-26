@@ -68,4 +68,4 @@
 <?php else: ?>
 <p class="alert">No entities returned.</p>
 <?php endif; ?>
-<p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Text Analysis by IBM Watson Natural Language Understanding</a></p>
+<p><a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html" target="_blank">Text Analysis by IBM Watson Natural Language Understanding</a></p>

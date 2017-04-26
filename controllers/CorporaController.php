@@ -56,6 +56,8 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
 
         $prevLink = 'n/a';
         $nextLink = 'n/a';
+        $currentSequenceMember = $sequenceMember ? $this->_getSequenceMemberLabel($corpus->sequence_type, $sequenceMember) : 'n/a';
+
         if ($corpus->isSequenced()) {
             $prevSeqMem = $corpusAnalysis->getPreviousSequenceMember();
             if ($prevSeqMem) {
@@ -72,13 +74,10 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $this->view->taCorpus = $taCorpus;
         $this->view->corpus = $corpus;
         $this->view->corpusAnalysis = $corpusAnalysis;
-        $this->view->currentSequenceMember = $this->_getSequenceMemberLabel($corpus->sequence_type, $sequenceMember);
+        $this->view->analysis = $analysis;
         $this->view->prevLink = $prevLink;
         $this->view->nextLink = $nextLink;
-        $this->view->entities = isset($analysis['entities']) ? $analysis['entities'] : null;
-        $this->view->keywords = isset($analysis['keywords']) ? $analysis['keywords'] : null;
-        $this->view->categories = isset($analysis['categories']) ? $analysis['categories'] : null;
-        $this->view->concepts = isset($analysis['concepts']) ? $analysis['concepts'] : null;
+        $this->view->currentSequenceMember = $currentSequenceMember;
     }
 
     public function analyzeAction()

@@ -16,6 +16,13 @@ jQuery(window).load(function () {
     <li><a href="#concepts">Concepts</a></li>
 </ul>
 
+<?php if (isset($analysis['code'])): ?>
+<h3>Service Error</h3>
+<p class="error">The Natural Language Understanding service returned an error. No
+analysis was performed. Below is the error response.</p>
+<code><textarea rows="8"><?php echo json_encode($analysis, JSON_PRETTY_PRINT); ?></textarea></code>
+<?php endif; ?>
+
 <div id="overview">
     <h3>Overview</h3>
     <table>
@@ -41,17 +48,29 @@ jQuery(window).load(function () {
 </div>
 
 <div id="entities">
-    <?php echo $this->partial('text-analysis-entities.php', array('entities' => $this->entities)); ?>
+    <?php echo $this->partial(
+        'text-analysis-entities.php',
+        array('entities' => isset($analysis['entities']) ? $analysis['entities'] : null)
+    ); ?>
 </div>
 
 <div id="keywords">
-    <?php echo $this->partial('text-analysis-keywords.php', array('keywords' => $this->keywords)); ?>
+    <?php echo $this->partial(
+        'text-analysis-keywords.php',
+        array('keywords' => isset($analysis['keywords']) ? $analysis['keywords'] : null)
+    ); ?>
 </div>
 
 <div id="categories">
-    <?php echo $this->partial('text-analysis-categories.php', array('categories' => $this->categories)); ?>
+    <?php echo $this->partial(
+        'text-analysis-categories.php',
+        array('categories' => isset($analysis['categories']) ? $analysis['categories'] : null)
+    ); ?>
 </div>
 
 <div id="concepts">
-    <?php echo $this->partial('text-analysis-concepts.php', array('concepts' => $this->concepts)); ?>
+    <?php echo $this->partial(
+        'text-analysis-concepts.php',
+        array('concepts' => isset($analysis['concepts']) ? $analysis['concepts'] : null)
+    ); ?>
 </div>

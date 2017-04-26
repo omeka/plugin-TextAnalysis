@@ -1,42 +1,9 @@
 <?php
 class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionController
 {
-    public function indexAction()
+    public function init()
     {
-        $db = $this->_helper->db;
-        $taCorpora = $db->getTable('TextAnalysisCorpus')->findAll();
-
-        $corpusRows = array();
-        foreach ($taCorpora as $taCorpus) {
-            $corpus = $taCorpus->getCorpus();
-            $process = $taCorpus->getProcess();
-            $analyses = $taCorpus->getAnalyses();
-
-            if ('completed' === $process->status) {
-                if ($corpus->isSequenced()) {
-                    $options = array('Select to view');
-                    foreach ($analyses as $analysis) {
-                        $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $analysis->sequence_member));
-                        $options[$url] =  $this->_getSequenceMemberLabel($corpus->sequence_type, $analysis->sequence_member);
-                    }
-                    $analysisField = $this->view->formSelect('sequence_member', null, array('class' => 'corpus_sequence_member'), $options);
-
-                } else {
-                    $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
-                    $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
-                }
-            } else {
-                $analysisField = '[not available]';
-            }
-
-            $corpusRows[] = array(
-                'name' => link_to($corpus, 'show', $corpus->name),
-                'process' => ucwords($process->status),
-                'analysis' => $analysisField,
-            );
-        }
-
-        $this->view->corpusRows = $corpusRows;
+        $this->_helper->db->setDefaultModelName('TextAnalysisCorpus');
     }
 
     public function analysisAction()
@@ -56,18 +23,18 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
 
         $prevLink = 'n/a';
         $nextLink = 'n/a';
-        $currentSequenceMember = $sequenceMember ? $this->_getSequenceMemberLabel($corpus->sequence_type, $sequenceMember) : 'n/a';
+        $currentSequenceMember = $sequenceMember ? $taCorpus->getSequenceMemberLabel($sequenceMember) : 'n/a';
 
         if ($corpus->isSequenced()) {
             $prevSeqMem = $corpusAnalysis->getPreviousSequenceMember();
             if ($prevSeqMem) {
                 $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $prevSeqMem));
-                $prevLink = sprintf('<a href="%s">%s</a>', $url, $this->_getSequenceMemberLabel($corpus->sequence_type, $prevSeqMem));
+                $prevLink = sprintf('<a href="%s">%s</a>', $url, $taCorpus->getSequenceMemberLabel($prevSeqMem));
             }
             $nextSeqMem = $corpusAnalysis->getNextSequenceMember();
             if ($nextSeqMem) {
                 $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $nextSeqMem));
-                $nextLink = sprintf('<a href="%s">%s</a>', $url, $this->_getSequenceMemberLabel($corpus->sequence_type, $nextSeqMem));
+                $nextLink = sprintf('<a href="%s">%s</a>', $url, $taCorpus->getSequenceMemberLabel($nextSeqMem));
             }
         }
 
@@ -136,21 +103,5 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             'categories' => 'Categories',
             'concepts' => 'Concepts',
         );
-    }
-
-    protected function _getSequenceMemberLabel($sequenceType, $sequenceMember)
-    {
-        switch ($sequenceType) {
-            case 'month':
-                $dateTime = DateTime::createFromFormat('Ym', $sequenceMember);
-                return $dateTime->format('Y F');
-            case 'day':
-                $dateTime = DateTime::createFromFormat('Ymd', $sequenceMember);
-                return $dateTime->format('Y F j');
-            case 'year':
-            case 'numeric':
-            default:
-                return $sequenceMember;
-        }
     }
 }

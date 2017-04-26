@@ -37,4 +37,20 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
         }
         return $this->getTable('TextAnalysisCorpusAnalysis')->findBy($query);
     }
+
+    public function getSequenceMemberLabel($sequenceMember)
+    {
+        switch ($this->getCorpus()->sequence_type) {
+            case 'month':
+                $dateTime = DateTime::createFromFormat('Ym', $sequenceMember);
+                return $dateTime->format('Y F');
+            case 'day':
+                $dateTime = DateTime::createFromFormat('Ymd', $sequenceMember);
+                return $dateTime->format('Y F j');
+            case 'year':
+            case 'numeric':
+            default:
+                return $sequenceMember;
+        }
+    }
 }

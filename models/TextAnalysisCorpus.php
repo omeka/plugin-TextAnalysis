@@ -4,6 +4,7 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
     public $id;
     public $corpus_id;
     public $process_id;
+    public $item_cost;
     public $feature_entities;
     public $feature_keywords;
     public $feature_categories;

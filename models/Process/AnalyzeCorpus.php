@@ -3,8 +3,11 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
 {
     public function run($args)
     {
+        $taCorpusId = $args['text_analysis_corpus_id'];
+        $itemCostOnly = isset($args['item_cost_only']) ? (bool) $args['item_cost_only'] : false;
+
         $db = get_db();
-        $taCorpus = $db->getTable('TextAnalysisCorpus')->find($args['text_analysis_corpus_id']);
+        $taCorpus = $db->getTable('TextAnalysisCorpus')->find($taCorpusId);
         $corpus = $taCorpus->getCorpus();
 
         // Limit analysis to the requested features.
@@ -49,6 +52,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
 
         $db->beginTransaction();
         try {
+            $itemCost = 0;
             if ($corpus->isSequenced()) {
                 // Process a sequenced corpus.
                 $items = array();
@@ -61,9 +65,13 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                     foreach ($itemIds as $itemId) {
                         $itemTexts[] = $db->query($selectTextSql, $itemId)->fetchColumn(0);
                     }
-                    $response = $watsonNlu->combined(implode(PHP_EOL, $itemTexts), $features);
-                    $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
-                    $db->query($insertAnalysisSql, array($sequenceMember, $analysis));
+                    $text = implode(PHP_EOL, $itemTexts);
+                    $itemCost += $watsonNlu->getItemCost($text, $features);
+                    if (!$itemCostOnly) {
+                        $response = $watsonNlu->combined($text, $features);
+                        $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
+                        $db->query($insertAnalysisSql, array($sequenceMember, $analysis));
+                    }
                 }
             } else {
                 // Process an unsequenced corpus.
@@ -71,10 +79,16 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                 foreach ($corpus->ItemsCorpus as $itemId) {
                     $itemTexts[] = $db->query($selectTextSql, $itemId)->fetchColumn(0);
                 }
-                $response = $watsonNlu->combined(implode(PHP_EOL, $itemTexts), $features);
-                $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
-                $db->query($insertAnalysisSql, array(null, $analysis));
+                $text = implode(PHP_EOL, $itemTexts);
+                $itemCost += $watsonNlu->getItemCost($text, $features);
+                if (!$itemCostOnly) {
+                    $response = $watsonNlu->combined(implode(PHP_EOL, $itemTexts), $features);
+                    $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
+                    $db->query($insertAnalysisSql, array(null, $analysis));
+                }
             }
+            $taCorpus->item_cost = $itemCost;
+            $taCorpus->save();
             $db->commit();
         } catch (Exception $e) {
             $db->rollBack();

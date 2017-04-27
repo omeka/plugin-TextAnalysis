@@ -11,6 +11,7 @@ echo flash();
     <tr>
         <th>Name</th>
         <th>Process</th>
+        <th>NLU Item Cost</th>
         <th>Analysis</th>
     </tr>
 </thead>
@@ -20,6 +21,9 @@ echo flash();
 $corpus = $taCorpus->getCorpus();
 $process = $taCorpus->getProcess();
 $analyses = $taCorpus->getAnalyses();
+
+$itemCostField = '[not available]';
+$analysisField = '[not available]';
 
 if ('completed' === $process->status) {
     if ($corpus->isSequenced()) {
@@ -34,8 +38,9 @@ if ('completed' === $process->status) {
         $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
         $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
     }
-} else {
-    $analysisField = '[not available]';
+    if (is_numeric($taCorpus->item_cost)) {
+        $itemCostField = '~' . number_format($taCorpus->item_cost);
+    }
 }
 ?>
     <tr>
@@ -48,6 +53,7 @@ if ('completed' === $process->status) {
             </ul>
         </td>
         <td><?php echo ucwords($process->status); ?></td>
+        <td><?php echo $itemCostField; ?></td>
         <td><?php echo $analysisField; ?></td>
     </tr>
 <?php endforeach; ?>

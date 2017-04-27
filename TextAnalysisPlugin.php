@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `{$db->prefix}text_analysis_corpus` (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `corpus_id` int(10) UNSIGNED DEFAULT NULL,
   `process_id` int(10) UNSIGNED DEFAULT NULL,
+  `item_cost` int(10) UNSIGNED DEFAULT NULL,
   `feature_entities` tinyint(1) DEFAULT NULL,
   `feature_keywords` tinyint(1) DEFAULT NULL,
   `feature_categories` tinyint(1) DEFAULT NULL,
@@ -107,6 +108,14 @@ ADD CONSTRAINT `text_analysis_corpus_analyses`
 FOREIGN KEY (`text_analysis_corpus_id`)
 REFERENCES `{$db->prefix}text_analysis_corpus` (`id`)
 ON DELETE CASCADE;
+SQL
+            );
+        }
+
+        if (version_compare($args['old_version'], '2.1', '<=')) {
+            $db->query(<<<SQL
+ALTER TABLE `{$db->prefix}text_analysis_corpus`
+ADD `item_cost` INT UNSIGNED NULL DEFAULT NULL AFTER `process_id`;
 SQL
             );
         }

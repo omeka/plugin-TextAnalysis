@@ -71,6 +71,23 @@ class TextAnalysis_WatsonNlu
         return $this->request($params);
     }
 
+    /**
+     * Get an item cost estimate.
+     *
+     * Watson NLU incurs a cost per item per feature: one item is one feature
+     * with up to 10,000 characters.
+     *
+     * @see https://www.ibm.com/watson/developercloud/natural-language-understanding.html#pricing-block
+     * @param string $text
+     * @param array $features
+     * @return int
+     */
+    public function getItemCost($text, array $features = array())
+    {
+        return ceil(count($features) * (mb_strlen($text) / 10000));
+
+    }
+
     protected function request(array $params)
     {
         $client = new Zend_Http_Client;

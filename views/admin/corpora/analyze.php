@@ -22,6 +22,15 @@
             <?php endforeach; ?>
         </div>
     </div>
+    <div class="field">
+        <div class="two columns alpha">
+            <label for="item_cost_only">Item cost only?</label>
+        </div>
+        <div class="inputs five columns omega">
+            <p class="explanation">Only calculate the NLU item cost. Do not run the analysis.</p>
+            <?php echo $this->formCheckbox('item_cost_only', null, array('id' => 'item_cost_only')); ?>
+        </div>
+    </div>
 </section>
 <section class="three columns omega">
     <div id="save" class="panel">

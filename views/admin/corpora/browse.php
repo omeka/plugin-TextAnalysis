@@ -25,7 +25,7 @@ $analyses = $taCorpus->getAnalyses();
 $itemCostField = '[not available]';
 $analysisField = '[not available]';
 
-if ('completed' === $process->status) {
+if ($analyses && 'completed' === $process->status) {
     if ($corpus->isSequenced()) {
         $options = array('Select to view');
         foreach ($analyses as $analysis) {
@@ -38,10 +38,11 @@ if ('completed' === $process->status) {
         $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
         $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
     }
-    if (is_numeric($taCorpus->item_cost)) {
-        $itemCostField = '~' . number_format($taCorpus->item_cost);
-    }
 }
+if (is_numeric($taCorpus->item_cost)) {
+    $itemCostField = '~' . number_format($taCorpus->item_cost);
+}
+
 ?>
     <tr>
         <td>

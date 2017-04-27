@@ -75,6 +75,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             $process = Omeka_Job_Process_Dispatcher::startProcess(
                 'Process_AnalyzeCorpus', null, array(
                     'text_analysis_corpus_id' => $taCorpus->id,
+                    'item_cost_only' => $request->getPost('item_cost_only'),
                 )
             );
 

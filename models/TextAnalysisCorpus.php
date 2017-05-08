@@ -41,7 +41,9 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
 
     public function getSequenceMemberLabel($sequenceMember)
     {
-        switch ($this->getCorpus()->sequence_type) {
+        $corpus = $this->getCorpus();
+        $sequenceType = $corpus ? $corpus->sequence_type : null;
+        switch ($sequenceType) {
             case 'month':
                 $dateTime = DateTime::createFromFormat('Ym', $sequenceMember);
                 return $dateTime->format('Y F');

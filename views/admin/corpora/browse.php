@@ -26,17 +26,16 @@ $itemCostField = '[not available]';
 $analysisField = '[not available]';
 
 if ($analyses && 'completed' === $process->status) {
-    if ($corpus->isSequenced()) {
+    if (1 === count($analyses)) {
+        $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
+        $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
+    } else {
         $options = array('Select to view');
         foreach ($analyses as $analysis) {
             $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $analysis->sequence_member));
             $options[$url] = $taCorpus->getSequenceMemberLabel($analysis->sequence_member);
         }
         $analysisField = $this->formSelect('sequence_member', null, array('class' => 'corpus_sequence_member'), $options);
-
-    } else {
-        $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
-        $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
     }
 }
 if (is_numeric($taCorpus->item_cost)) {
@@ -46,7 +45,7 @@ if (is_numeric($taCorpus->item_cost)) {
 ?>
     <tr>
         <td>
-            <?php echo link_to($corpus, 'show', $corpus->name); ?>
+            <?php echo $corpus ? link_to($corpus, 'show', $corpus->name) : '[not available]'; ?>
             <ul class="action-links">
                 <?php if ('completed' === $process->status): ?>
                 <li><?php echo link_to($taCorpus, 'delete-confirm', 'Delete', array('class' => 'delete-confirm')); ?></li>

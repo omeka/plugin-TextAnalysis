@@ -26,7 +26,7 @@ jQuery(window).load(function () {
         <tbody>
             <tr>
                 <th>Corpus</th>
-                <td><?php echo link_to($corpus, 'show', $corpus->name); ?></td>
+                <td><?php echo $corpus ? link_to($corpus, 'show', $corpus->name) : '[not available]'; ?></td>
             </tr>
             <tr>
                 <th>Previous</th>

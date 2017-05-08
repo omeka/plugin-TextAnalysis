@@ -25,7 +25,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $nextLink = 'n/a';
         $currentSequenceMember = $sequenceMember ? $taCorpus->getSequenceMemberLabel($sequenceMember) : 'n/a';
 
-        if ($corpus->isSequenced()) {
+        if ($corpus && $corpus->isSequenced()) {
             $prevSeqMem = $corpusAnalysis->getPreviousSequenceMember();
             if ($prevSeqMem) {
                 $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $prevSeqMem));

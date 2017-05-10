@@ -40,6 +40,10 @@ jQuery(window).load(function () {
                 <th>Next</th>
                 <td><?php echo $nextLink; ?></td>
             </tr>
+            <tr>
+                <th>Export</th>
+                <td><?php echo $exportLink; ?></td>
+            </tr>
         </tbody>
     </table>
 </div>

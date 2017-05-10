@@ -38,13 +38,38 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             }
         }
 
+        $url = url(array('action' => 'export'), null, array('id' => $taCorpus->id, 'sequence_member' => $sequenceMember));
+        $exportLink = sprintf('<a href="%s">%s</a>', $url, $this->getExportFilename($id, $sequenceMember));
+
         $this->view->taCorpus = $taCorpus;
         $this->view->corpus = $corpus;
         $this->view->corpusAnalysis = $corpusAnalysis;
         $this->view->analysis = $analysis;
         $this->view->prevLink = $prevLink;
         $this->view->nextLink = $nextLink;
+        $this->view->exportLink = $exportLink;
         $this->view->currentSequenceMember = $currentSequenceMember;
+    }
+
+    public function exportAction()
+    {
+        $db = $this->_helper->db;
+        $request = $this->getRequest();
+
+        $id = $request->getQuery('id');
+        $sequenceMember = $request->getQuery('sequence_member');
+
+        $taCorpus = $db->getTable('TextAnalysisCorpus')->find($id);
+        $corpusAnalysis = $taCorpus->getAnalyses($sequenceMember);
+        $corpusAnalysis = $corpusAnalysis[0];
+
+        $this->getResponse()
+            ->setHeader('Content-Type', 'application/json')
+            ->setHeader('Content-Disposition', sprintf('attachment; filename="%s"', $this->getExportFilename($id, $sequenceMember)))
+            ->setHeader('Content-Length', strlen($corpusAnalysis->analysis))
+            ->setBody($corpusAnalysis->analysis)
+            ->sendResponse();
+        exit;
     }
 
     public function analyzeAction()
@@ -104,5 +129,12 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             'categories' => 'Categories',
             'concepts' => 'Concepts',
         );
+    }
+
+    protected function getExportFilename($id, $sequenceMember = null)
+    {
+        return $sequenceMember
+            ? sprintf('text-analysis-%s-%s.json', $id, $sequenceMember)
+            : sprintf('text-analysis-%s.json', $id);
     }
 }

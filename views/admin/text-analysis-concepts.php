@@ -1,7 +1,13 @@
 <h3>General Concepts</h3>
 <p>Identify high-level concepts that aren't necessarily directly referenced in the text.</p>
 <?php if ($this->concepts): ?>
-<a href="#glossary-concepts">Glossary</a>
+<h4>Glossary</h4>
+<dl>
+    <dt>Concept</dt>
+    <dd>Name of the concept</dd>
+    <dt>Relevance</dt>
+    <dd>Relevance score for the concept ranging from 0 to 1. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
+</dl>
 <table>
     <thead>
         <tr>
@@ -18,14 +24,6 @@
         <?php endforeach; ?>
     </tbody>
 </table>
-<h4 id="glossary-concepts">Glossary</h4>
-<dl>
-    <dt>Concept</dt>
-    <dd>Name of the concept</dd>
-    <dt>Relevance</dt>
-    <dd>Relevance score for the concept ranging from 0 to 1. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
-</dl>
-
 <?php else: ?>
 <p class="alert">No concepts returned.</p>
 <?php endif; ?>

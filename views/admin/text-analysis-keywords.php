@@ -1,7 +1,17 @@
 <h3>Keywords</h3>
 <p>Identify the important keywords in the text.</p>
 <?php if ($this->keywords): ?>
-<a href="#glossary-keywords">Glossary</a>
+<h4>Glossary</h4>
+<dl>
+    <dt>Keyword</dt>
+    <dd>Keyword text</dd>
+    <dt>Emotion</dt>
+    <dd>Emotion scores ranging from 0 to 1 for sadness, joy, fear, disgust, and anger. A 0 means the text doesn't convey the emotion, and a 1 means the text definitely carries the emotion.</dd>
+    <dt>Sentiment</dt>
+    <dd>Sentiment score for the concept ranging from -1 to 1. Negative scores indicate negative sentiment, and positive scores indicate positive sentiment.</dd>
+    <dt>Relevance</dt>
+    <dd>Keyword relevance score. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
+</dl>
 <table>
     <thead>
         <tr>
@@ -32,17 +42,6 @@
         <?php endforeach; ?>
     </tbody>
 </table>
-<h4 id="glossary-keywords">Glossary</h4>
-<dl>
-    <dt>Keyword</dt>
-    <dd>Keyword text</dd>
-    <dt>Emotion</dt>
-    <dd>Emotion scores ranging from 0 to 1 for sadness, joy, fear, disgust, and anger. A 0 means the text doesn't convey the emotion, and a 1 means the text definitly carries the emotion.</dd>
-    <dt>Sentiment</dt>
-    <dd>Sentiment score for the concept ranging from -1 to 1. Negative scores indicate negative sentiment, and positive scores indicate positive sentiment.</dd>
-    <dt>Relevance</dt>
-    <dd>Keyword relevance score. A 0 means it's not relevant, and a 1 means it's highly relevant.</dd>
-</dl>
 <?php else: ?>
 <p class="alert">No keywords returned.</p>
 <?php endif; ?>

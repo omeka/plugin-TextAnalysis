@@ -11,7 +11,7 @@ echo flash();
     <tr>
         <th>Name</th>
         <th>Process</th>
-        <th>NLU Item Cost</th>
+        <th>NLU Item Cost*</th>
         <th>Analysis</th>
     </tr>
 </thead>
@@ -59,6 +59,12 @@ if (is_numeric($taCorpus->item_cost)) {
 <?php endforeach; ?>
 </tbody>
 </table>
+
+<p>* <a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Watson Natural Language Understanding</a>
+(NLU) incurs a cost per item per feature: one item is one feature with up to
+10,000 characters. This service uses up to four features: Entities, Keywords,
+Categories, and Concepts.</p>
+
 
 <script>
 jQuery( document ).ready(function() {

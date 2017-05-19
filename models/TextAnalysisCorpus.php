@@ -5,10 +5,6 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
     public $corpus_id;
     public $process_id;
     public $item_cost;
-    public $feature_entities;
-    public $feature_keywords;
-    public $feature_categories;
-    public $feature_concepts;
 
     /**
      * Get the related Ngram corpus.

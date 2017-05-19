@@ -25,23 +25,24 @@ $analyses = $taCorpus->getAnalyses();
 $itemCostField = '[not available]';
 $analysisField = '[not available]';
 
-if ($analyses && 'completed' === $process->status) {
-    if (1 === count($analyses)) {
-        $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
-        $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
-    } else {
-        $options = array('Select to view');
-        foreach ($analyses as $analysis) {
-            $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $analysis->sequence_member));
-            $options[$url] = $taCorpus->getSequenceMemberLabel($analysis->sequence_member);
+if ('completed' === $process->status) {
+    if ($analyses) {
+        if (1 === count($analyses)) {
+            $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id));
+            $analysisField = sprintf('<a href="%s">%s</a>', $url, 'View');
+        } else {
+            $options = array('Select to view');
+            foreach ($analyses as $analysis) {
+                $url = url(array('action' => 'analysis'), null, array('id' => $taCorpus->id, 'sequence_member' => $analysis->sequence_member));
+                $options[$url] = $taCorpus->getSequenceMemberLabel($analysis->sequence_member);
+            }
+            $analysisField = $this->formSelect('sequence_member', null, array('class' => 'corpus_sequence_member'), $options);
         }
-        $analysisField = $this->formSelect('sequence_member', null, array('class' => 'corpus_sequence_member'), $options);
+    }
+    if (is_numeric($taCorpus->item_cost)) {
+        $itemCostField = '~' . number_format($taCorpus->item_cost);
     }
 }
-if (is_numeric($taCorpus->item_cost)) {
-    $itemCostField = '~' . number_format($taCorpus->item_cost);
-}
-
 ?>
     <tr>
         <td>

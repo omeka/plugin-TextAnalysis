@@ -4,6 +4,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
     public function run($args)
     {
         $taCorpusId = $args['text_analysis_corpus_id'];
+        $argFeatures = $args['features'];
         $itemCostOnly = isset($args['item_cost_only']) ? (bool) $args['item_cost_only'] : false;
 
         $db = get_db();
@@ -12,16 +13,16 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
 
         // Limit analysis to the requested features.
         $features = array();
-        if ($taCorpus->feature_entities) {
+        if ($argFeatures['entities']) {
             $features['entities'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
         }
-        if ($taCorpus->feature_keywords) {
+        if ($argFeatures['keywords']) {
             $features['keywords'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
         }
-        if ($taCorpus->feature_categories) {
+        if ($argFeatures['categories']) {
             $features['categories'] = array();
         }
-        if ($taCorpus->feature_concepts) {
+        if ($argFeatures['concepts']) {
             $features['concepts'] = array();
         }
 

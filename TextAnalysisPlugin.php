@@ -24,10 +24,6 @@ CREATE TABLE IF NOT EXISTS `{$db->prefix}text_analysis_corpus` (
   `corpus_id` int(10) UNSIGNED DEFAULT NULL,
   `process_id` int(10) UNSIGNED DEFAULT NULL,
   `item_cost` int(10) UNSIGNED DEFAULT NULL,
-  `feature_entities` tinyint(1) DEFAULT NULL,
-  `feature_keywords` tinyint(1) DEFAULT NULL,
-  `feature_categories` tinyint(1) DEFAULT NULL,
-  `feature_concepts` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `corpus_id` (`corpus_id`),
   UNIQUE KEY `process_id` (`process_id`)
@@ -116,6 +112,17 @@ SQL
             $db->query(<<<SQL
 ALTER TABLE `{$db->prefix}text_analysis_corpus`
 ADD `item_cost` INT UNSIGNED NULL DEFAULT NULL AFTER `process_id`;
+SQL
+            );
+        }
+
+        if (version_compare($args['old_version'], '2.2', '<=')) {
+            $db->query(<<<SQL
+ALTER TABLE `{$db->prefix}text_analysis_corpus`
+  DROP `feature_entities`,
+  DROP `feature_keywords`,
+  DROP `feature_categories`,
+  DROP `feature_concepts`;
 SQL
             );
         }

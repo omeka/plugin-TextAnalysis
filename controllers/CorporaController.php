@@ -78,29 +78,44 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $request = $this->getRequest();
 
         if ($request->isPost()) {
-            $corpus = $db->getTable('NgramCorpus')->find($request->getPost('corpus_id'));
+            $corpusId = $request->getPost('corpus_id');
+            $features = $request->getPost('features');
+            $itemCostOnly = (bool) $request->getPost('item_cost_only');
+
+            $corpus = $db->getTable('NgramCorpus')->find($corpusId);
             if (!$corpus) {
                 $this->_helper->redirector('analyze');
             }
-            $features = $request->getPost('features');
+
+            $nluFeatures = array(
+                'entities' => !empty($features['entities']),
+                'keywords' => !empty($features['keywords']),
+                'categories' => !empty($features['categories']),
+                'concepts' => !empty($features['concepts']),
+            );
 
             $taCorpus = $db->getTable('TextAnalysisCorpus')->findBy(array('corpus_id' => $corpus->id));
+            $taCorpus = $taCorpus[0];
             if ($taCorpus) {
-                $taCorpus[0]->delete(); // this cascade deletes all related analyses
+                if (!$itemCostOnly && ($nluFeatures['entities'] || $nluFeatures['keywords'] || $nluFeatures['categories'] || $nluFeatures['concepts'])) {
+                    // User requested to analyze at least one NLU feature for an
+                    // existing corpus. Delete all existing NLU analyses before
+                    // reanalyzing.
+                    foreach ($taCorpus->getAnalyses() as $analysis) {
+                        $analysis->delete();
+                    }
+                }
+            } else {
+                $taCorpus = new TextAnalysisCorpus;
+                $taCorpus->corpus_id = $corpus->id;
             }
-
-            $taCorpus = new TextAnalysisCorpus;
-            $taCorpus->corpus_id = $corpus->id;
-            $taCorpus->feature_entities = empty($features['entities']) ? 0 : 1;
-            $taCorpus->feature_keywords = empty($features['keywords']) ? 0 : 1;
-            $taCorpus->feature_categories = empty($features['categories']) ? 0 : 1;
-            $taCorpus->feature_concepts = empty($features['concepts']) ? 0 : 1;
             $taCorpus->save(true);
 
             $process = Omeka_Job_Process_Dispatcher::startProcess(
                 'Process_AnalyzeCorpus', null, array(
                     'text_analysis_corpus_id' => $taCorpus->id,
-                    'item_cost_only' => $request->getPost('item_cost_only'),
+                    'features' => $nluFeatures,
+                    'item_cost_only' => $itemCostOnly,
                 )
             );
 

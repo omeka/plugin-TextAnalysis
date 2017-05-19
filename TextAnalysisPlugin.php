@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS `{$db->prefix}text_analysis_corpus` (
   `corpus_id` int(10) UNSIGNED DEFAULT NULL,
   `process_id` int(10) UNSIGNED DEFAULT NULL,
   `item_cost` int(10) UNSIGNED DEFAULT NULL,
+  `topic_keys` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL,
+  `doc_topics` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `corpus_id` (`corpus_id`),
   UNIQUE KEY `process_id` (`process_id`)
@@ -123,6 +125,15 @@ ALTER TABLE `{$db->prefix}text_analysis_corpus`
   DROP `feature_keywords`,
   DROP `feature_categories`,
   DROP `feature_concepts`;
+SQL
+            );
+        }
+
+        if (version_compare($args['old_version'], '2.3', '<=')) {
+            $db->query(<<<SQL
+ALTER TABLE `{$db->prefix}text_analysis_corpus`
+  ADD `topic_keys` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL,
+  ADD `doc_topics` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL;
 SQL
             );
         }

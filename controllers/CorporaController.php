@@ -87,17 +87,18 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
                 $this->_helper->redirector('analyze');
             }
 
-            $nluFeatures = array(
+            $features = array(
                 'entities' => !empty($features['entities']),
                 'keywords' => !empty($features['keywords']),
                 'categories' => !empty($features['categories']),
                 'concepts' => !empty($features['concepts']),
+                'topic_model' => !empty($features['topic_model']),
             );
 
             $taCorpus = $db->getTable('TextAnalysisCorpus')->findBy(array('corpus_id' => $corpus->id));
             $taCorpus = $taCorpus[0];
             if ($taCorpus) {
-                if (!$itemCostOnly && ($nluFeatures['entities'] || $nluFeatures['keywords'] || $nluFeatures['categories'] || $nluFeatures['concepts'])) {
+                if (!$itemCostOnly && ($features['entities'] || $features['keywords'] || $features['categories'] || $features['concepts'])) {
                     // User requested to analyze at least one NLU feature for an
                     // existing corpus. Delete all existing NLU analyses before
                     // reanalyzing.
@@ -114,7 +115,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             $process = Omeka_Job_Process_Dispatcher::startProcess(
                 'Process_AnalyzeCorpus', null, array(
                     'text_analysis_corpus_id' => $taCorpus->id,
-                    'features' => $nluFeatures,
+                    'features' => $features,
                     'item_cost_only' => $itemCostOnly,
                 )
             );
@@ -139,10 +140,11 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
 
         $this->view->corporaOptions = $corporaOptions;
         $this->view->featureOptions = array(
-            'entities' => 'Entities',
-            'keywords' => 'Keywords',
-            'categories' => 'Categories',
-            'concepts' => 'Concepts',
+            'entities' => 'Entities (NLU)',
+            'keywords' => 'Keywords (NLU)',
+            'categories' => 'Categories (NLU)',
+            'concepts' => 'Concepts (NLU)',
+            'topic_model' => 'Topic Model (MALLET)',
         );
     }
 

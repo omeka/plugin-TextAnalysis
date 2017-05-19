@@ -18,7 +18,7 @@
         <div class="inputs five columns omega">
             <p class="explanation">Limit the features to analyze. Limiting features will reduce the NLU item cost.</p>
             <?php foreach ($featureOptions as $key => $value): ?>
-            <label><?php echo $this->formCheckbox(sprintf('features[%s]', $key), null, array('id' => 'features', 'checked' => true)); ?> <?php echo $value; ?></label>
+            <label><?php echo $this->formCheckbox(sprintf('features[%s]', $key), null, array('id' => 'features', 'checked' => false)); ?> <?php echo $value; ?></label>
             <?php endforeach; ?>
         </div>
     </div>

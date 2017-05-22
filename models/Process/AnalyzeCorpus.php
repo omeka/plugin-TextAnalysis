@@ -26,11 +26,10 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
             $nluFeatures['concepts'] = array();
         }
         if ($features['topic_model']) {
-            $malletTmpStr = md5(mt_rand());
-            $malletTmpDir = sprintf('%s/%s', realpath(sprintf('%s/../../mallet', __DIR__)), $malletTmpStr);
-            $malletTmpCorpusDir = sprintf('%s/corpus', $malletTmpDir);
-            mkdir($malletTmpDir);
-            mkdir($malletTmpCorpusDir);
+            $topicModel = new TextAnalysis_TopicModel(
+                '/home/jimsafley/Desktop/hack-to-learn/mallet-2.0.8/bin/mallet',
+                realpath(sprintf('%s/../../mallet', __DIR__))
+            );
         }
 
         $watsonNlu = new TextAnalysis_WatsonNlu(
@@ -83,8 +82,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                         }
                     }
                     if ($features['topic_model']) {
-                        $filename = sprintf('%s/%s', $malletTmpCorpusDir, $sequenceMember);
-                        file_put_contents($filename, $text);
+                        $topicModel->addInstance($sequenceMember, $text);
                     }
                 }
             } else {
@@ -102,38 +100,27 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                         $db->query($insertAnalysisSql, array(null, $analysis));
                     }
                 }
+                if ($features['topic_model']) {
+                    $topicModel->addInstance('instance', $text);
+                }
             }
             if ($features['topic_model']) {
-                $malletCmd = '/home/jimsafley/Desktop/hack-to-learn/mallet-2.0.8/bin/mallet';
-                $malletInputFile = sprintf('%s/input.mallet', $malletTmpDir, $malletTmpStr);
-                $malletDocTopicsFile = sprintf('%s/doc_topics', $malletTmpDir);
-                $malletTopicKeysFile = sprintf('%s/topic_keys', $malletTmpDir);
+                $topicModel->buildTopicModel();
 
-                $cmdImportDir = sprintf(
-                    '%s import-dir --input %s --output %s --keep-sequence --remove-stopwords',
-                    $malletCmd,
-                    escapeshellarg($malletTmpCorpusDir),
-                    escapeshellarg($malletInputFile)
-                );
-                $cmdTrainTopics = sprintf(
-                    '%s train-topics --input %s --output-doc-topics %s --output-topic-keys %s',
-                    $malletCmd,
-                    escapeshellarg($malletInputFile),
-                    escapeshellarg($malletDocTopicsFile),
-                    escapeshellarg($malletTopicKeysFile)
-                );
+                // Format results for better retrieval.
+                $topicKeys = array();
+                foreach ($topicModel->getTopicKeys() as $topicKey) {
+                    $topicKeys[$topicKey[0]] = $topicKey[2];
+                }
+                $docTopics = array();
+                foreach ($topicModel->getDocTopics() as $docTopic) {
+                    $sequenceMember = basename($docTopic[1]);
+                    $docTopics[$sequenceMember] = array_slice($docTopic, 2);
+                }
+                ksort($docTopics);
 
-                exec($cmdImportDir);
-                exec($cmdTrainTopics);
-
-                // Remove temporary files and directory.
-                //~ $files = glob(sprintf('%s/*', $malletTmpDir));
-                //~ foreach ($files as $file) {
-                    //~ if (is_file($file)) {
-                        //~ unlink($file);
-                    //~ }
-                //~ }
-                //~ rmdir($malletTmpDir);
+                $taCorpus->topic_keys = json_encode($topicKeys, JSON_FORCE_OBJECT);
+                $taCorpus->doc_topics = json_encode($docTopics, JSON_FORCE_OBJECT);
             }
             if ($nluFeatures) {
                 $taCorpus->item_cost = $itemCost;

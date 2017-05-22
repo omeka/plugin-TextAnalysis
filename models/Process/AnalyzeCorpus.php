@@ -83,7 +83,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                         }
                     }
                     if ($features['topic_model']) {
-                        $filename = sprintf('%s/%s.txt', $malletTmpCorpusDir, $sequenceMember);
+                        $filename = sprintf('%s/%s', $malletTmpCorpusDir, $sequenceMember);
                         file_put_contents($filename, $text);
                     }
                 }
@@ -106,8 +106,8 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
             if ($features['topic_model']) {
                 $malletCmd = '/home/jimsafley/Desktop/hack-to-learn/mallet-2.0.8/bin/mallet';
                 $malletInputFile = sprintf('%s/input.mallet', $malletTmpDir, $malletTmpStr);
-                $malletDocTopicsFile = sprintf('%s/doc_topics.txt', $malletTmpDir);
-                $malletTopicKeysFile = sprintf('%s/topic_keys.txt', $malletTmpDir);
+                $malletDocTopicsFile = sprintf('%s/doc_topics', $malletTmpDir);
+                $malletTopicKeysFile = sprintf('%s/topic_keys', $malletTmpDir);
 
                 $cmdImportDir = sprintf(
                     '%s import-dir --input %s --output %s --keep-sequence --remove-stopwords',

@@ -23,7 +23,6 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
 
         $prevLink = 'n/a';
         $nextLink = 'n/a';
-        $currentSequenceMember = $sequenceMember ? $taCorpus->getSequenceMemberLabel($sequenceMember) : 'n/a';
 
         if ($corpus && $corpus->isSequenced()) {
             $prevSeqMem = $corpusAnalysis->getPreviousSequenceMember();
@@ -48,7 +47,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $this->view->prevLink = $prevLink;
         $this->view->nextLink = $nextLink;
         $this->view->exportLink = $exportLink;
-        $this->view->currentSequenceMember = $currentSequenceMember;
+        $this->view->sequenceMember = $sequenceMember;
     }
 
     public function exportAction()

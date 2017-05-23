@@ -64,6 +64,7 @@ SQL
         delete_option('text_analysis_alchemyapi_key');
         delete_option('text_analysis_username');
         delete_option('text_analysis_password');
+        delete_option('text_analysis_mallet_path');
     }
 
     public function hookUpgrade($args)
@@ -149,6 +150,19 @@ SQL
     {
         set_option('text_analysis_username', $args['post']['username']);
         set_option('text_analysis_password', $args['post']['password']);
+
+        $malletPath = trim($args['post']['mallet_path']);
+        if ($malletPath) {
+            $malletFile = sprintf('%s/mallet', $malletPath);
+            if (is_executable($malletFile)) {
+                set_option('text_analysis_mallet_path', $malletPath);
+            } else {
+                delete_option('text_analysis_mallet_path');
+                throw new Omeka_Validate_Exception('Invalid path to MALLET executable.');
+            }
+        } else {
+            delete_option('text_analysis_mallet_path');
+        }
     }
 
     public function hookDefineAcl($args)

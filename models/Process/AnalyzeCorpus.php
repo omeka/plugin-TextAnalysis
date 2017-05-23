@@ -25,9 +25,10 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
         if ($features['concepts']) {
             $nluFeatures['concepts'] = array();
         }
-        if ($features['topic_model']) {
+        $topicModelFeature = $features['topic_model'] && get_option('text_analysis_mallet_path');
+        if ($topicModelFeature) {
             $topicModel = new TextAnalysis_MalletTopicModel(
-                '/home/jimsafley/Desktop/hack-to-learn/mallet-2.0.8/bin/mallet',
+                sprintf('%s/mallet', get_option('text_analysis_mallet_path')),
                 realpath(sprintf('%s/../../mallet', __DIR__))
             );
         }
@@ -81,7 +82,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                             $db->query($insertAnalysisSql, array($sequenceMember, $analysis));
                         }
                     }
-                    if ($features['topic_model']) {
+                    if ($topicModelFeature) {
                         $topicModel->addInstance($sequenceMember, $text);
                     }
                 }
@@ -100,11 +101,11 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                         $db->query($insertAnalysisSql, array(null, $analysis));
                     }
                 }
-                if ($features['topic_model']) {
+                if ($topicModelFeature) {
                     $topicModel->addInstance('instance', $text);
                 }
             }
-            if ($features['topic_model']) {
+            if ($topicModelFeature) {
                 $topicModel->buildTopicModel();
 
                 // Format results for better retrieval.

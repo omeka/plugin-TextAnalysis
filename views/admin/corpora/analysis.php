@@ -14,14 +14,16 @@ jQuery(window).load(function () {
     <li><a href="#keywords">Keywords</a></li>
     <li><a href="#categories">Categories</a></li>
     <li><a href="#concepts">Concepts</a></li>
+    <li><a href="#topic-model">Topic Model</a></li>
 </ul>
-
-<div id="error">
-<?php echo $this->partial('text-analysis-error.php', array('analysis' => $analysis)); ?>
-</div>
 
 <div id="overview">
     <h3>Overview</h3>
+
+    <div id="error">
+    <?php echo $this->partial('text-analysis-error.php', array('analysis' => $analysis)); ?>
+    </div>
+
     <table>
         <tbody>
             <tr>
@@ -34,14 +36,14 @@ jQuery(window).load(function () {
             </tr>
             <tr>
                 <th>Current</th>
-                <td><?php echo $currentSequenceMember; ?></td>
+                <td><?php echo $sequenceMember ? $taCorpus->getSequenceMemberLabel($sequenceMember) : 'n/a'; ?></td>
             </tr>
             <tr>
                 <th>Next</th>
                 <td><?php echo $nextLink; ?></td>
             </tr>
             <tr>
-                <th>Export</th>
+                <th>Export NLU</th>
                 <td><?php echo $exportLink; ?></td>
             </tr>
         </tbody>
@@ -73,5 +75,12 @@ jQuery(window).load(function () {
     <?php echo $this->partial(
         'text-analysis-concepts.php',
         array('concepts' => isset($analysis['concepts']) ? $analysis['concepts'] : null)
+    ); ?>
+</div>
+
+<div id="topic-model">
+    <?php echo $this->partial(
+        'text-analysis-topic-model.php',
+        array('taCorpus' => $taCorpus, 'sequenceMember' => $sequenceMember)
     ); ?>
 </div>

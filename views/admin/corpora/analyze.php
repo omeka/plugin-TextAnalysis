@@ -16,7 +16,7 @@
             <label for="features">Features</label>
         </div>
         <div class="inputs five columns omega">
-            <p class="explanation">Limit the features to analyze. Limiting features will reduce the NLU item cost.</p>
+            <p class="explanation">Limit the features to analyze. Limiting NLU features will reduce the item cost.</p>
             <?php foreach ($featureOptions as $key => $value): ?>
             <label><?php echo $this->formCheckbox(sprintf('features[%s]', $key), null, array('id' => 'features', 'checked' => false)); ?> <?php echo $value; ?></label>
             <?php endforeach; ?>
@@ -27,7 +27,7 @@
             <label for="item_cost_only">Item cost only?</label>
         </div>
         <div class="inputs five columns omega">
-            <p class="explanation">Only calculate the NLU item cost. Do not run the analysis.</p>
+            <p class="explanation">Calculate the NLU item cost but do not run any NLU analysis.</p>
             <?php echo $this->formCheckbox('item_cost_only', null, array('id' => 'item_cost_only')); ?>
         </div>
     </div>

@@ -151,17 +151,17 @@ SQL
         set_option('text_analysis_username', $args['post']['username']);
         set_option('text_analysis_password', $args['post']['password']);
 
-        $malletPath = trim($args['post']['mallet_path']);
-        if ($malletPath) {
-            $malletFile = sprintf('%s/mallet', $malletPath);
-            if (is_executable($malletFile)) {
-                set_option('text_analysis_mallet_path', $malletPath);
+        $malletCmdDir = trim($args['post']['mallet_cmd_dir']);
+        if ($malletCmdDir) {
+            $malletCmd = sprintf('%s/mallet', $malletCmdDir);
+            if (is_executable($malletCmd)) {
+                set_option('text_analysis_mallet_cmd_dir', $malletCmdDir);
             } else {
-                delete_option('text_analysis_mallet_path');
-                throw new Omeka_Validate_Exception('Invalid path to MALLET executable.');
+                delete_option('text_analysis_mallet_cmd_dir');
+                throw new Omeka_Validate_Exception('Invalid path to the directory containing the MALLET executable.');
             }
         } else {
-            delete_option('text_analysis_mallet_path');
+            delete_option('text_analysis_mallet_cmd_dir');
         }
     }
 

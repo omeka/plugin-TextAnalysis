@@ -25,12 +25,11 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
         if ($features['concepts']) {
             $nluFeatures['concepts'] = array();
         }
-        $topicModelFeature = $features['topic_model'] && get_option('text_analysis_mallet_path');
-        if ($topicModelFeature) {
-            $topicModel = new TextAnalysis_MalletTopicModel(
-                sprintf('%s/mallet', get_option('text_analysis_mallet_path')),
-                realpath(sprintf('%s/../../mallet', __DIR__))
-            );
+        $malletCmd = realpath(sprintf('%s/mallet', get_option('text_analysis_mallet_cmd_dir')));
+        $malletDir = realpath(sprintf('%s/../../mallet_tmp', __DIR__));
+        $doTopicModel = $features['topic_model'] && is_executable($malletCmd) && is_writable($malletDir);
+        if ($doTopicModel) {
+            $topicModel = new TextAnalysis_MalletTopicModel($malletCmd, $malletDir);
         }
 
         $watsonNlu = new TextAnalysis_WatsonNlu(
@@ -82,7 +81,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                             $db->query($insertAnalysisSql, array($sequenceMember, $analysis));
                         }
                     }
-                    if ($topicModelFeature) {
+                    if ($doTopicModel) {
                         $topicModel->addInstance($sequenceMember, $text);
                     }
                 }
@@ -101,11 +100,11 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                         $db->query($insertAnalysisSql, array(null, $analysis));
                     }
                 }
-                if ($topicModelFeature) {
+                if ($doTopicModel) {
                     $topicModel->addInstance('instance', $text);
                 }
             }
-            if ($topicModelFeature) {
+            if ($doTopicModel) {
                 $topicModel->buildTopicModel();
 
                 // Format results for better retrieval.

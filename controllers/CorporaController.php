@@ -105,6 +105,13 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
                         $analysis->delete();
                     }
                 }
+                if ($features['topic_model']) {
+                    // User requested the topic model feature for an existing
+                    // corpus. Remove all existing topic model data before
+                    // reanalyzing.
+                    $taCorpus->topic_keys = null;
+                    $taCorpus->doc_topics = null;
+                }
             } else {
                 $taCorpus = new TextAnalysisCorpus;
                 $taCorpus->corpus_id = $corpus->id;

@@ -1,5 +1,5 @@
 <?php
-class TextAnalysis_TopicModel {
+class TextAnalysis_MalletTopicModel {
 
     protected $cmd;
     protected $tmpDir;

@@ -26,7 +26,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
             $nluFeatures['concepts'] = array();
         }
         if ($features['topic_model']) {
-            $topicModel = new TextAnalysis_TopicModel(
+            $topicModel = new TextAnalysis_MalletTopicModel(
                 '/home/jimsafley/Desktop/hack-to-learn/mallet-2.0.8/bin/mallet',
                 realpath(sprintf('%s/../../mallet', __DIR__))
             );

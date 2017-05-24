@@ -28,6 +28,16 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
         return $this->getTable('Process')->find($this->process_id);
     }
 
+    public function getTopicKeys()
+    {
+        return json_decode($this->topic_keys, true);
+    }
+
+    public function getDocTopics()
+    {
+        return json_decode($this->doc_topics, true);
+    }
+
     public function getAnalyses($sequenceMember = null)
     {
         $query = array('text_analysis_corpus_id' => $this->id);

@@ -202,7 +202,7 @@ SQL
     {
         if (plugin_is_active('Ngram')) {
             $nav[] = array(
-                'label' => __('Text Analysis: Corpora'),
+                'label' => __('Text Analysis'),
                 'uri' => url('text-analysis/corpora'),
                 'resource' => ('TextAnalysis_Corpora'),
             );

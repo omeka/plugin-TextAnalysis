@@ -50,6 +50,26 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $this->view->sequenceMember = $sequenceMember;
     }
 
+    public function topicModelAction()
+    {
+        $db = $this->_helper->db;
+        $request = $this->getRequest();
+
+        $id = $request->getQuery('id');
+        $sequenceMember = $request->getQuery('sequence_member');
+
+        $taCorpus = $db->getTable('TextAnalysisCorpus')->find($id);
+        $topicKeys = $taCorpus->getTopicKeys();
+        $docTopics = $taCorpus->getDocTopics();
+        $docTopics = $docTopics[$sequenceMember ? $sequenceMember : 'instance'];
+        arsort($docTopics);
+
+        $this->view->taCorpus = $taCorpus;
+        $this->view->sequenceMember = $sequenceMember;
+        $this->view->docTopics = $docTopics;
+        $this->view->topicKeys = $topicKeys;
+    }
+
     public function exportAction()
     {
         $db = $this->_helper->db;

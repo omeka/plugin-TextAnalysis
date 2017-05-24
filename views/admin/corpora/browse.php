@@ -11,8 +11,8 @@ echo flash();
     <tr>
         <th>Name</th>
         <th>Process</th>
-        <th>NLU Item Cost*</th>
-        <th>Analysis</th>
+        <th>NLU Analysis</th>
+        <th>MALLET Topic Model</th>
     </tr>
 </thead>
 <tbody>
@@ -21,9 +21,11 @@ echo flash();
 $corpus = $taCorpus->getCorpus();
 $process = $taCorpus->getProcess();
 $analyses = $taCorpus->getAnalyses();
+$docTopics = $taCorpus->getDocTopics();
 
-$itemCostField = '[not available]';
+$itemCostField = null;
 $analysisField = '[not available]';
+$topicModelField = '[not available]';
 
 if ('completed' === $process->status) {
     if ($analyses) {
@@ -40,7 +42,21 @@ if ('completed' === $process->status) {
         }
     }
     if (is_numeric($taCorpus->item_cost)) {
-        $itemCostField = '~' . number_format($taCorpus->item_cost);
+        $itemCostField = sprintf('~%s item cost*', number_format($taCorpus->item_cost));
+    }
+    if ($docTopics) {
+        if (1 === count($docTopics)) {
+            $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id));
+            $topicModelField = sprintf('<a href="%s">%s</a>', $url, 'View');
+        } else {
+            $sequenceMembers = array_keys($docTopics);
+            $options = array('Select to view');
+            foreach ($sequenceMembers as $sequenceMember) {
+                $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id, 'sequence_member' => $sequenceMember));
+                $options[$url] = $taCorpus->getSequenceMemberLabel($sequenceMember);
+            }
+            $topicModelField = $this->formSelect('sequence_member', null, array('class' => 'corpus_sequence_member'), $options);
+        }
     }
 }
 ?>
@@ -54,8 +70,13 @@ if ('completed' === $process->status) {
             </ul>
         </td>
         <td><?php echo ucwords($process->status); ?></td>
-        <td><?php echo $itemCostField; ?></td>
-        <td><?php echo $analysisField; ?></td>
+        <td>
+            <?php echo $analysisField; ?>
+            <?php if ($itemCostField): ?>
+            <br><?php echo $itemCostField; ?>
+            <?php endif; ?>
+        </td>
+        <td><?php echo $topicModelField; ?></td>
     </tr>
 <?php endforeach; ?>
 </tbody>

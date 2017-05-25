@@ -16,7 +16,7 @@
             <label for="features">Features</label>
         </div>
         <div class="inputs five columns omega">
-            <p class="explanation">Limit the features to analyze. Limiting NLU features will reduce the item cost.</p>
+            <p class="explanation">Select which features to analyze. Limiting NLU features will reduce the item cost.</p>
             <?php foreach ($featureOptions as $key => $value): ?>
             <label><?php echo $this->formCheckbox(sprintf('features[%s]', $key), null, array('id' => 'features', 'checked' => false)); ?> <?php echo $value; ?></label>
             <?php endforeach; ?>
@@ -27,8 +27,17 @@
             <label for="item_cost_only">Item cost only?</label>
         </div>
         <div class="inputs five columns omega">
-            <p class="explanation">Calculate the NLU item cost but do not run any NLU analysis.</p>
+            <p class="explanation">Calculate the item cost of the selected NLU features but do not run any NLU analysis.</p>
             <?php echo $this->formCheckbox('item_cost_only', null, array('id' => 'item_cost_only')); ?>
+        </div>
+    </div>
+    <div class="field">
+        <div class="two columns alpha">
+            <label for="stopwords">Stopwords</label>
+        </div>
+        <div class="inputs five columns omega">
+            <p class="explanation">Applies only to the "Topic Model" feature. In addition to common English stopwords, remove these whitespace-separated words from the corpus.</p>
+            <?php echo $this->formTextarea('stopwords', null, array('id' => 'stopwords', 'rows' => '6')); ?>
         </div>
     </div>
 </section>

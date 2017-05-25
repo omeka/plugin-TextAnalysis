@@ -99,6 +99,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         if ($request->isPost()) {
             $corpusId = $request->getPost('corpus_id');
             $features = $request->getPost('features');
+            $stopwords = $request->getPost('stopwords');
             $itemCostOnly = (bool) $request->getPost('item_cost_only');
 
             $corpus = $db->getTable('NgramCorpus')->find($corpusId);
@@ -142,6 +143,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
                 'Process_AnalyzeCorpus', null, array(
                     'text_analysis_corpus_id' => $taCorpus->id,
                     'features' => $features,
+                    'stopwords' => $stopwords,
                     'item_cost_only' => $itemCostOnly,
                 )
             );

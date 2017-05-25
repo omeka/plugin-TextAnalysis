@@ -5,6 +5,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
     {
         $taCorpusId = $args['text_analysis_corpus_id'];
         $features = $args['features'];
+        $stopwords = $args['stopwords'];
         $itemCostOnly = isset($args['item_cost_only']) ? (bool) $args['item_cost_only'] : false;
 
         $db = get_db();
@@ -30,6 +31,7 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
         $doTopicModel = $features['topic_model'] && is_executable($malletCmd) && is_writable($malletDir);
         if ($doTopicModel) {
             $topicModel = new TextAnalysis_MalletTopicModel($malletCmd, $malletDir);
+            $topicModel->setExtraStopwords($stopwords);
         }
 
         $watsonNlu = new TextAnalysis_WatsonNlu(

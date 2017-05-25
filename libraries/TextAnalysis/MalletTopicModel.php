@@ -4,6 +4,7 @@ class TextAnalysis_MalletTopicModel {
     protected $cmd;
     protected $tmpDir;
     protected $tmpInstanceDir;
+    protected $extraStopwords;
     protected $topicKeys;
     protected $docTopics;
 
@@ -11,13 +12,24 @@ class TextAnalysis_MalletTopicModel {
      * @param string $cmdDir Path to mallet command
      * @param string $tmpDir Path to directory that will contain temporary files
      */
-    public function __construct($cmd, $dir)
+    public function __construct($cmd, $dir, $extraStopwords = null)
     {
         $this->cmd = $cmd;
         $this->tmpDir = sprintf('%s/%s', $dir, md5(mt_rand()));
         $this->tmpInstanceDir = sprintf('%s/instances', $this->tmpDir);
         mkdir($this->tmpDir);
         mkdir($this->tmpInstanceDir);
+    }
+
+    /**
+     * Set extra whitespace-separated stopwords.
+     *
+     * @param string $extraStopwords
+     */
+    public function setExtraStopwords($extraStopwords)
+    {
+        $extraStopwords = trim($extraStopwords);
+        $this->extraStopwords = '' === $extraStopwords ? null : $extraStopwords ;
     }
 
     /**
@@ -43,23 +55,39 @@ class TextAnalysis_MalletTopicModel {
         $topicKeysFile = sprintf('%s/topic_keys', $this->tmpDir);
         $docTopicsFile = sprintf('%s/doc_topics', $this->tmpDir);
 
+        // MALLET: import directory
+        $argsImportDir = array(
+            sprintf('--input %s', escapeshellarg($this->tmpInstanceDir)),
+            sprintf('--output %s', escapeshellarg($inputFile)),
+            '--keep-sequence',
+            '--remove-stopwords',
+        );
+        if ($this->extraStopwords) {
+            $extraStopwordsFile = sprintf('%s/extra_stopwords', $this->tmpDir);;
+            file_put_contents($extraStopwordsFile, $this->extraStopwords);
+            $argsImportDir[] = sprintf('--extra-stopwords %s', $extraStopwordsFile);
+        }
         $cmdImportDir = sprintf(
-            '%s import-dir --input %s --output %s --keep-sequence --remove-stopwords',
+            '%s import-dir %s',
             $this->cmd,
-            escapeshellarg($this->tmpInstanceDir),
-            escapeshellarg($inputFile)
+            implode(' ', $argsImportDir)
+        );
+        exec($cmdImportDir);
+
+        // MALLET: train topics
+        $argsTrainTopics = array(
+            sprintf('--input %s', escapeshellarg($inputFile)),
+            sprintf('--output-doc-topics %s', escapeshellarg($docTopicsFile)),
+            sprintf('--output-topic-keys %s', escapeshellarg($topicKeysFile)),
         );
         $cmdTrainTopics = sprintf(
-            '%s train-topics --input %s --output-doc-topics %s --output-topic-keys %s',
+            '%s train-topics %s',
             $this->cmd,
-            escapeshellarg($inputFile),
-            escapeshellarg($docTopicsFile),
-            escapeshellarg($topicKeysFile)
+            implode(' ', $argsTrainTopics)
         );
-
-        exec($cmdImportDir);
         exec($cmdTrainTopics);
 
+        // Extract topic keys and document topics.
         $strGetCsv = function ($value) {
             return str_getcsv($value, "\t");
         };

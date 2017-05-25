@@ -26,11 +26,17 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
         if ($features['concepts']) {
             $nluFeatures['concepts'] = array();
         }
-        $malletCmd = realpath(sprintf('%s/mallet', get_option('text_analysis_mallet_cmd_dir')));
-        $malletDir = realpath(sprintf('%s/../../mallet_tmp', __DIR__));
-        $doTopicModel = $features['topic_model'] && is_executable($malletCmd) && is_writable($malletDir);
+        $doTopicModel = (bool) $features['topic_model'];
         if ($doTopicModel) {
-            $topicModel = new TextAnalysis_MalletTopicModel($malletCmd, $malletDir);
+            try {
+                $topicModel = new TextAnalysis_MalletTopicModel(
+                    realpath(sprintf('%s/mallet', get_option('text_analysis_mallet_cmd_dir'))),
+                    realpath(sprintf('%s/../../mallet_tmp', __DIR__))
+                );
+            } catch (Exception $e) {
+                echo $e->getMessage();
+                $doTopicModel = false;
+            }
             $topicModel->setExtraStopwords($stopwords);
         }
 

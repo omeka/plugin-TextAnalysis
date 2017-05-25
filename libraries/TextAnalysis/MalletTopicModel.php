@@ -9,11 +9,18 @@ class TextAnalysis_MalletTopicModel {
     protected $docTopics;
 
     /**
-     * @param string $cmdDir Path to mallet command
-     * @param string $tmpDir Path to directory that will contain temporary files
+     * @param string $cmd Path to mallet script
+     * @param string $dir Path to temporary files directory
      */
     public function __construct($cmd, $dir, $extraStopwords = null)
     {
+        if (!is_executable($cmd)) {
+            throw new Exception('The MALLET script is not executable or cannot be found.');
+        }
+        if (!is_writable($dir)) {
+            throw new Exception('The MALLET temporary files directory is not writable or cannot be found.');
+        }
+
         $this->cmd = $cmd;
         $this->tmpDir = sprintf('%s/%s', $dir, md5(mt_rand()));
         $this->tmpInstanceDir = sprintf('%s/instances', $this->tmpDir);

@@ -2,6 +2,7 @@
 echo head(array('title' => 'Text Analysis: MALLET Topic Model'));
 $i = 1;
 ?>
+<p><?php echo sprintf('%s | %s', $prevLink, $nextLink); ?></p>
 <?php foreach ($docTopics as $key => $decimal): ?>
 <?php $percent = round($decimal * 100); ?>
 <h4><?php printf('Topic #%s (%s%%)', $i++, $percent); ?></h4>

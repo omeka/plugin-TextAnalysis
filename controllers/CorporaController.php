@@ -60,14 +60,36 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
 
         $taCorpus = $db->getTable('TextAnalysisCorpus')->find($id);
         $topicKeys = $taCorpus->getTopicKeys();
-        $docTopics = $taCorpus->getDocTopics();
-        $docTopics = $docTopics[$sequenceMember ? $sequenceMember : 'instance'];
+        $docTopicsAll = $taCorpus->getDocTopics();
+        $docTopics = $docTopicsAll[$sequenceMember ? $sequenceMember : 'instance'];
         arsort($docTopics);
+
+        $prevLink = 'n/a';
+        $nextLink = 'n/a';
+
+        $seqMems = array_keys($docTopicsAll);
+        foreach ($seqMems as $key => $seqMem) {
+            if ($seqMem == $sequenceMember) {
+                if (isset($seqMems[$key - 1])) {
+                    $prevSeqMem = $seqMems[$key - 1];
+                    $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id, 'sequence_member' => $prevSeqMem));
+                    $prevLink = sprintf('<a href="%s">%s</a>', $url, $taCorpus->getSequenceMemberLabel($prevSeqMem));
+                }
+                if (isset($seqMems[$key + 1])) {
+                    $nextSeqMem = $seqMems[$key + 1];
+                    $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id, 'sequence_member' => $nextSeqMem));
+                    $nextLink = sprintf('<a href="%s">%s</a>', $url, $taCorpus->getSequenceMemberLabel($nextSeqMem));
+                }
+                break;
+            }
+        }
 
         $this->view->taCorpus = $taCorpus;
         $this->view->sequenceMember = $sequenceMember;
         $this->view->docTopics = $docTopics;
         $this->view->topicKeys = $topicKeys;
+        $this->view->prevLink = $prevLink;
+        $this->view->nextLink = $nextLink;
     }
 
     public function exportAction()

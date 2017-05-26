@@ -166,7 +166,7 @@ SQL
                 set_option('text_analysis_mallet_script_dir', $malletScriptDir);
             } else {
                 delete_option('text_analysis_mallet_script_dir');
-                throw new Omeka_Validate_Exception('Invalid path to the directory containing the MALLET executable.');
+                throw new Omeka_Validate_Exception('The MALLET script directory is invalid. Make sure the directory contains the MALLET script and that the script is executable by the web server.');
             }
         } else {
             delete_option('text_analysis_mallet_script_dir');

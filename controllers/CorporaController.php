@@ -6,6 +6,12 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $this->_helper->db->setDefaultModelName('TextAnalysisCorpus');
     }
 
+    public function browseAction()
+    {
+        parent::browseAction();
+        $this->view->canAnalyze = (bool) $this->getAvailableFeatures();
+    }
+
     public function analysisAction()
     {
         $db = $this->_helper->db;
@@ -126,7 +132,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
 
             $corpus = $db->getTable('NgramCorpus')->find($corpusId);
             if (!$corpus) {
-                $this->_helper->redirector('analyze');
+                $this->_helper->redirector('browse');
             }
 
             $features = array(
@@ -180,6 +186,11 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             $this->_helper->redirector('index');
         }
 
+        $featureOptions = $this->getAvailableFeatures();
+        if (!$featureOptions) {
+            $this->_helper->redirector('browse');
+        }
+
         $corpora = $db->getTable('NgramCorpus')->findAll();
         $corporaOptions = array('Select Below');
         foreach ($corpora as $corpus) {
@@ -189,13 +200,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         }
 
         $this->view->corporaOptions = $corporaOptions;
-        $this->view->featureOptions = array(
-            'entities' => 'Entities (NLU)',
-            'keywords' => 'Keywords (NLU)',
-            'categories' => 'Categories (NLU)',
-            'concepts' => 'Concepts (NLU)',
-            'topic_model' => 'Topic Model (MALLET)',
-        );
+        $this->view->featureOptions = $featureOptions;
     }
 
     protected function getExportFilename($id, $sequenceMember = null)
@@ -203,5 +208,21 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         return $sequenceMember
             ? sprintf('text-analysis-%s-%s.json', $id, $sequenceMember)
             : sprintf('text-analysis-%s.json', $id);
+    }
+
+    protected function getAvailableFeatures() {
+        $features = array();
+        if (get_option('text_analysis_username') && get_option('text_analysis_password')) {
+            $features = array_merge($features, array(
+                'entities' => 'Entities (NLU)',
+                'keywords' => 'Keywords (NLU)',
+                'categories' => 'Categories (NLU)',
+                'concepts' => 'Concepts (NLU)',
+            ));
+        }
+        if (get_option('text_analysis_mallet_script_dir')) {
+            $features['topic_model'] = 'Topic Model (MALLET)';
+        }
+        return $features;
     }
 }

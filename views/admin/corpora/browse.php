@@ -4,8 +4,9 @@ echo flash();
 ?>
 <?php if ($total_results): ?>
 
+<?php if ($canAnalyze): ?>
 <a href="<?php echo url(array('action' => 'analyze')); ?>" class="small green button">Analyze a Corpus</a>
-
+<?php endif; ?>
 <table>
 <thead>
     <tr>
@@ -83,10 +84,9 @@ if ('completed' === $process->status) {
 </table>
 
 <p>* <a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Watson Natural Language Understanding</a>
-(NLU) incurs a cost per item per feature: one item is one feature with up to
-10,000 characters. This service uses up to four features: Entities, Keywords,
-Categories, and Concepts.</p>
-
+(NLU) incurs a cost per item per feature: one item is one feature with up to 10,000
+characters. This service uses up to four features: Entities, Keywords, Categories,
+and Concepts.</p>
 
 <script>
 jQuery( document ).ready(function() {
@@ -98,10 +98,11 @@ jQuery( document ).ready(function() {
 
 <?php else: ?>
 
-<h2>No Ngram corpora have been analyzed.</h2>
+<h3>No Ngram corpora have been analyzed.</h3>
+<?php if ($canAnalyze): ?>
 <p>Get started by analyzing your first corpus.</p>
 <a href="<?php echo url(array('action' => 'analyze')); ?>" class="add big green button">Analyze a Corpus</a>
-
+<?php endif; ?>
 <?php endif; ?>
 
 <?php echo foot(); ?>

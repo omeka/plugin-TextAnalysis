@@ -30,8 +30,8 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
         if ($doTopicModel) {
             try {
                 $topicModel = new TextAnalysis_MalletTopicModel(
-                    realpath(sprintf('%s/mallet', get_option('text_analysis_mallet_cmd_dir'))),
-                    realpath(sprintf('%s/../../mallet_tmp', __DIR__))
+                    realpath(sprintf('%s/mallet', get_option('text_analysis_mallet_script_dir'))),
+                    realpath(sprintf('%s/../../mallet_processing', __DIR__))
                 );
             } catch (Exception $e) {
                 echo $e->getMessage();

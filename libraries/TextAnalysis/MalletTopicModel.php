@@ -1,7 +1,7 @@
 <?php
 class TextAnalysis_MalletTopicModel {
 
-    protected $cmd;
+    protected $script;
     protected $tmpDir;
     protected $tmpInstanceDir;
     protected $extraStopwords;
@@ -9,20 +9,20 @@ class TextAnalysis_MalletTopicModel {
     protected $docTopics;
 
     /**
-     * @param string $cmd Path to mallet script
-     * @param string $dir Path to temporary files directory
+     * @param string $script Path to MALLET script
+     * @param string $processingDir Path to processing directory
      */
-    public function __construct($cmd, $dir, $extraStopwords = null)
+    public function __construct($script, $processingDir, $extraStopwords = null)
     {
-        if (!is_executable($cmd)) {
+        if (!is_executable($script)) {
             throw new Exception('The MALLET script is not executable or cannot be found.');
         }
-        if (!is_writable($dir)) {
-            throw new Exception('The MALLET temporary files directory is not writable or cannot be found.');
+        if (!is_writable($processingDir)) {
+            throw new Exception('The MALLET processing directory is not writable or cannot be found.');
         }
 
-        $this->cmd = $cmd;
-        $this->tmpDir = sprintf('%s/%s', $dir, md5(mt_rand()));
+        $this->script = $script;
+        $this->tmpDir = sprintf('%s/%s', $processingDir, md5(mt_rand()));
         $this->tmpInstanceDir = sprintf('%s/instances', $this->tmpDir);
         mkdir($this->tmpDir);
         mkdir($this->tmpInstanceDir);
@@ -74,12 +74,11 @@ class TextAnalysis_MalletTopicModel {
             file_put_contents($extraStopwordsFile, $this->extraStopwords);
             $argsImportDir[] = sprintf('--extra-stopwords %s', $extraStopwordsFile);
         }
-        $cmdImportDir = sprintf(
+        exec(sprintf(
             '%s import-dir %s',
-            $this->cmd,
+            $this->script,
             implode(' ', $argsImportDir)
-        );
-        exec($cmdImportDir);
+        ));
 
         // MALLET: train topics
         $argsTrainTopics = array(
@@ -87,12 +86,11 @@ class TextAnalysis_MalletTopicModel {
             sprintf('--output-doc-topics %s', escapeshellarg($docTopicsFile)),
             sprintf('--output-topic-keys %s', escapeshellarg($topicKeysFile)),
         );
-        $cmdTrainTopics = sprintf(
+        exec(sprintf(
             '%s train-topics %s',
-            $this->cmd,
+            $this->script,
             implode(' ', $argsTrainTopics)
-        );
-        exec($cmdTrainTopics);
+        )   );
 
         // Extract topic keys and document topics.
         $strGetCsv = function ($value) {

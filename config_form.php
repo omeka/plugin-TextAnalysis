@@ -25,27 +25,28 @@ permissions.</p>
 </section>
 <p>This plugin uses <a href="http://mallet.cs.umass.edu/index.php">MALLET: A Machine Learning for Language Toolkit</a>
 to generate topic models. You must <a href="http://mallet.cs.umass.edu/download.php">download and install MALLET </a>
-and enter the path (from root) to the directory containing the MALLET executable.</p>
+and enter the path (from root) to the directory containing the MALLET script.</p>
 <?php
-$malletCmd = realpath(sprintf('%s/mallet', get_option('text_analysis_mallet_cmd_dir')));
-$malletDir = realpath(sprintf('%s/mallet_tmp', __DIR__));
+$malletScriptDir = get_option('text_analysis_mallet_script_dir');
+$malletScript = realpath(sprintf('%s/mallet', $malletScriptDir));
+$malletProcessingDir = realpath(sprintf('%s/mallet_processing', __DIR__));
 ?>
-<?php if (!is_executable($malletCmd)): ?>
-<p class="error">WARNING: The MALLET directory "<?php echo $malletCmd; ?>" is invalid.
-It must contain the MALLET executable file and it must be executable by the web server
-to generate topic models.</p>
+<?php if (!is_executable($malletScript)): ?>
+<p class="error">WARNING: The MALLET script directory "<?php echo $malletScriptDir; ?>"
+is invalid. To generate topic models the directory must contain the MALLET script
+and the script must be executable by the web server.</p>
 <?php endif; ?>
-<?php if (!is_writable($malletDir)): ?>
-<p class="error">WARNING: The MALLET directory "<?php echo $malletDir; ?>" is invalid.
-It must be writable by the web server to generate topic models.</p>
+<?php if (!is_writable($malletProcessingDir)): ?>
+<p class="error">WARNING: The MALLET processing directory "<?php echo $malletProcessingDir; ?>"
+is invalid. To generate topic models it must be writable by the web server.</p>
 <?php endif; ?>
 <section class="seven columns alpha">
     <div class="field">
         <div class="two column alpha">
-            <label for="mallet-path">MALLET directory</label>
+            <label for="mallet_script_dir">MALLET script directory</label>
         </div>
         <div class="inputs five columns omega">
-            <?php echo $view->formText('mallet_cmd_dir', get_option('text_analysis_mallet_cmd_dir'), array('id' => 'mallet-path')); ?>
+            <?php echo $view->formText('mallet_script_dir', get_option('text_analysis_mallet_script_dir'), array('id' => 'mallet_script_dir')); ?>
         </div>
     </div>
 </section>

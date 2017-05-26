@@ -64,7 +64,7 @@ SQL
         delete_option('text_analysis_alchemyapi_key');
         delete_option('text_analysis_username');
         delete_option('text_analysis_password');
-        delete_option('text_analysis_mallet_path');
+        delete_option('text_analysis_mallet_script');
     }
 
     public function hookUpgrade($args)
@@ -138,6 +138,14 @@ ALTER TABLE `{$db->prefix}text_analysis_corpus`
 SQL
             );
         }
+
+        if (version_compare($args['old_version'], '2.4', '<=')) {
+            $malletCmdDir = get_option('text_analysis_mallet_cmd_dir');
+            if ($malletCmdDir) {
+                delete_option('text_analysis_mallet_cmd_dir');
+                set_option('text_analysis_mallet_script_dir', $malletCmdDir);
+            }
+        }
     }
 
     public function hookConfigForm()
@@ -151,17 +159,17 @@ SQL
         set_option('text_analysis_username', $args['post']['username']);
         set_option('text_analysis_password', $args['post']['password']);
 
-        $malletCmdDir = trim($args['post']['mallet_cmd_dir']);
-        if ($malletCmdDir) {
-            $malletCmd = sprintf('%s/mallet', $malletCmdDir);
-            if (is_executable($malletCmd)) {
-                set_option('text_analysis_mallet_cmd_dir', $malletCmdDir);
+        $malletScriptDir = trim($args['post']['mallet_script_dir']);
+        if ($malletScriptDir) {
+            $malletScript = sprintf('%s/mallet', $malletScriptDir);
+            if (is_executable($malletScript)) {
+                set_option('text_analysis_mallet_script_dir', $malletScriptDir);
             } else {
-                delete_option('text_analysis_mallet_cmd_dir');
+                delete_option('text_analysis_mallet_script_dir');
                 throw new Omeka_Validate_Exception('Invalid path to the directory containing the MALLET executable.');
             }
         } else {
-            delete_option('text_analysis_mallet_cmd_dir');
+            delete_option('text_analysis_mallet_script_dir');
         }
     }
 

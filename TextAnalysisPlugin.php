@@ -8,7 +8,6 @@ class TextAnalysisPlugin extends Omeka_Plugin_AbstractPlugin
         'config_form',
         'config',
         'define_acl',
-        'admin_items_show_sidebar',
     );
 
     protected $_filters = array(
@@ -143,34 +142,10 @@ SQL
     public function hookDefineAcl($args)
     {
         $acl = $args['acl'];
-        $acl->addResource('TextAnalysis_Index');
         $acl->addResource('TextAnalysis_Corpora');
         // Given that usage may incur real costs, restrict text analysis
         // features to super and admin users.
-        $acl->allow(array('super', 'admin'), array('TextAnalysis_Index', 'TextAnalysis_Corpora'));
-    }
-
-    public function hookAdminItemsShowSidebar($args)
-    {
-        if (!is_allowed('TextAnalysis_Index', null)) {
-            return;
-        }
-        $item = $args['item'];
-        $elementTexts = $item->getAllElementTextsByElement();
-        $elementOptions = array();
-        foreach ($elementTexts as $elementId => $elementTexts) {
-            $elementOptions[$elementId] = $item->getElementById($elementId)->name;
-        }
-        echo $args['view']->partial('text-analysis-sidebar.php', array(
-            'item' => $item,
-            'elementOptions' => $elementOptions,
-            'features' => array(
-                'entities' => 'Entities',
-                'keywords' => 'Keywords',
-                'categories' => 'Categories',
-                'concepts' => 'Concepts',
-            ),
-        ));
+        $acl->allow(array('super', 'admin'), array('TextAnalysis_Corpora'));
     }
 
     public function filterAdminNavigationMain($nav)

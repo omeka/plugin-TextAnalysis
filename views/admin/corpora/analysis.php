@@ -1,5 +1,5 @@
 <?php
-echo head(array('title' => 'Text Analysis: Corpus Analysis'));
+echo head(array('title' => 'Text Analysis: NLU Analysis'));
 echo js_tag('tabs');
 ?>
 <script type="text/javascript" charset="utf-8">
@@ -17,7 +17,7 @@ jQuery(window).load(function () {
 </ul>
 
 <div id="error">
-<?php echo $this->partial('text-analysis-error.php', array('analysis' => $analysis)); ?>
+    <?php echo $this->partial('text-analysis-error.php', array('analysis' => $analysis)); ?>
 </div>
 
 <div id="overview">
@@ -34,14 +34,14 @@ jQuery(window).load(function () {
             </tr>
             <tr>
                 <th>Current</th>
-                <td><?php echo $currentSequenceMember; ?></td>
+                <td><?php echo $sequenceMember ? $taCorpus->getSequenceMemberLabel($sequenceMember) : 'n/a'; ?></td>
             </tr>
             <tr>
                 <th>Next</th>
                 <td><?php echo $nextLink; ?></td>
             </tr>
             <tr>
-                <th>Export</th>
+                <th>Export NLU</th>
                 <td><?php echo $exportLink; ?></td>
             </tr>
         </tbody>
@@ -75,3 +75,5 @@ jQuery(window).load(function () {
         array('concepts' => isset($analysis['concepts']) ? $analysis['concepts'] : null)
     ); ?>
 </div>
+
+<?php echo foot(); ?>

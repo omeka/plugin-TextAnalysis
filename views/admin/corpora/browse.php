@@ -4,15 +4,16 @@ echo flash();
 ?>
 <?php if ($total_results): ?>
 
+<?php if ($canAnalyze): ?>
 <a href="<?php echo url(array('action' => 'analyze')); ?>" class="small green button">Analyze a Corpus</a>
-
+<?php endif; ?>
 <table>
 <thead>
     <tr>
         <th>Name</th>
         <th>Process</th>
-        <th>NLU Item Cost*</th>
-        <th>Analysis</th>
+        <th>NLU Analysis</th>
+        <th>MALLET Topic Model</th>
     </tr>
 </thead>
 <tbody>
@@ -21,9 +22,11 @@ echo flash();
 $corpus = $taCorpus->getCorpus();
 $process = $taCorpus->getProcess();
 $analyses = $taCorpus->getAnalyses();
+$docTopics = $taCorpus->getDocTopics();
 
-$itemCostField = '[not available]';
+$itemCostField = null;
 $analysisField = '[not available]';
+$topicModelField = '[not available]';
 
 if ('completed' === $process->status) {
     if ($analyses) {
@@ -40,7 +43,21 @@ if ('completed' === $process->status) {
         }
     }
     if (is_numeric($taCorpus->item_cost)) {
-        $itemCostField = '~' . number_format($taCorpus->item_cost);
+        $itemCostField = sprintf('~%s item cost*', number_format($taCorpus->item_cost));
+    }
+    if ($docTopics) {
+        if (1 === count($docTopics)) {
+            $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id));
+            $topicModelField = sprintf('<a href="%s">%s</a>', $url, 'View');
+        } else {
+            $sequenceMembers = array_keys($docTopics);
+            $options = array('Select to view');
+            foreach ($sequenceMembers as $sequenceMember) {
+                $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id, 'sequence_member' => $sequenceMember));
+                $options[$url] = $taCorpus->getSequenceMemberLabel($sequenceMember);
+            }
+            $topicModelField = $this->formSelect('sequence_member', null, array('class' => 'corpus_sequence_member'), $options);
+        }
     }
 }
 ?>
@@ -54,18 +71,22 @@ if ('completed' === $process->status) {
             </ul>
         </td>
         <td><?php echo ucwords($process->status); ?></td>
-        <td><?php echo $itemCostField; ?></td>
-        <td><?php echo $analysisField; ?></td>
+        <td>
+            <?php echo $analysisField; ?>
+            <?php if ($itemCostField): ?>
+            <br><?php echo $itemCostField; ?>
+            <?php endif; ?>
+        </td>
+        <td><?php echo $topicModelField; ?></td>
     </tr>
 <?php endforeach; ?>
 </tbody>
 </table>
 
 <p>* <a href="https://www.ibm.com/watson/developercloud/natural-language-understanding.html">Watson Natural Language Understanding</a>
-(NLU) incurs a cost per item per feature: one item is one feature with up to
-10,000 characters. This service uses up to four features: Entities, Keywords,
-Categories, and Concepts.</p>
-
+(NLU) incurs a cost per item per feature: one item is one feature with up to 10,000
+characters. This service uses up to four features: Entities, Keywords, Categories,
+and Concepts.</p>
 
 <script>
 jQuery( document ).ready(function() {
@@ -77,10 +98,11 @@ jQuery( document ).ready(function() {
 
 <?php else: ?>
 
-<h2>No Ngram corpora have been analyzed.</h2>
+<h3>No Ngram corpora have been analyzed.</h3>
+<?php if ($canAnalyze): ?>
 <p>Get started by analyzing your first corpus.</p>
 <a href="<?php echo url(array('action' => 'analyze')); ?>" class="add big green button">Analyze a Corpus</a>
-
+<?php endif; ?>
 <?php endif; ?>
 
 <?php echo foot(); ?>

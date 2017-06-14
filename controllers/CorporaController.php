@@ -6,6 +6,12 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $this->_helper->db->setDefaultModelName('TextAnalysisCorpus');
     }
 
+    public function browseAction()
+    {
+        parent::browseAction();
+        $this->view->canAnalyze = (bool) $this->getAvailableFeatures();
+    }
+
     public function analysisAction()
     {
         $db = $this->_helper->db;
@@ -23,7 +29,6 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
 
         $prevLink = 'n/a';
         $nextLink = 'n/a';
-        $currentSequenceMember = $sequenceMember ? $taCorpus->getSequenceMemberLabel($sequenceMember) : 'n/a';
 
         if ($corpus && $corpus->isSequenced()) {
             $prevSeqMem = $corpusAnalysis->getPreviousSequenceMember();
@@ -48,7 +53,49 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         $this->view->prevLink = $prevLink;
         $this->view->nextLink = $nextLink;
         $this->view->exportLink = $exportLink;
-        $this->view->currentSequenceMember = $currentSequenceMember;
+        $this->view->sequenceMember = $sequenceMember;
+    }
+
+    public function topicModelAction()
+    {
+        $db = $this->_helper->db;
+        $request = $this->getRequest();
+
+        $id = $request->getQuery('id');
+        $sequenceMember = $request->getQuery('sequence_member');
+
+        $taCorpus = $db->getTable('TextAnalysisCorpus')->find($id);
+        $topicKeys = $taCorpus->getTopicKeys();
+        $docTopicsAll = $taCorpus->getDocTopics();
+        $docTopics = $docTopicsAll[$sequenceMember ? $sequenceMember : 'instance'];
+        arsort($docTopics);
+
+        $prevLink = 'n/a';
+        $nextLink = 'n/a';
+
+        $seqMems = array_keys($docTopicsAll);
+        foreach ($seqMems as $key => $seqMem) {
+            if ($seqMem == $sequenceMember) {
+                if (isset($seqMems[$key - 1])) {
+                    $prevSeqMem = $seqMems[$key - 1];
+                    $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id, 'sequence_member' => $prevSeqMem));
+                    $prevLink = sprintf('<a href="%s">%s</a>', $url, $taCorpus->getSequenceMemberLabel($prevSeqMem));
+                }
+                if (isset($seqMems[$key + 1])) {
+                    $nextSeqMem = $seqMems[$key + 1];
+                    $url = url(array('action' => 'topic-model'), null, array('id' => $taCorpus->id, 'sequence_member' => $nextSeqMem));
+                    $nextLink = sprintf('<a href="%s">%s</a>', $url, $taCorpus->getSequenceMemberLabel($nextSeqMem));
+                }
+                break;
+            }
+        }
+
+        $this->view->taCorpus = $taCorpus;
+        $this->view->sequenceMember = $sequenceMember;
+        $this->view->docTopics = $docTopics;
+        $this->view->topicKeys = $topicKeys;
+        $this->view->prevLink = $prevLink;
+        $this->view->nextLink = $nextLink;
     }
 
     public function exportAction()
@@ -80,30 +127,39 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         if ($request->isPost()) {
             $corpusId = $request->getPost('corpus_id');
             $features = $request->getPost('features');
+            $stopwords = $request->getPost('stopwords');
             $itemCostOnly = (bool) $request->getPost('item_cost_only');
 
             $corpus = $db->getTable('NgramCorpus')->find($corpusId);
             if (!$corpus) {
-                $this->_helper->redirector('analyze');
+                $this->_helper->redirector('browse');
             }
 
-            $nluFeatures = array(
+            $features = array(
                 'entities' => !empty($features['entities']),
                 'keywords' => !empty($features['keywords']),
                 'categories' => !empty($features['categories']),
                 'concepts' => !empty($features['concepts']),
+                'topic_model' => !empty($features['topic_model']),
             );
 
             $taCorpus = $db->getTable('TextAnalysisCorpus')->findBy(array('corpus_id' => $corpus->id));
             $taCorpus = $taCorpus[0];
             if ($taCorpus) {
-                if (!$itemCostOnly && ($nluFeatures['entities'] || $nluFeatures['keywords'] || $nluFeatures['categories'] || $nluFeatures['concepts'])) {
+                if (!$itemCostOnly && ($features['entities'] || $features['keywords'] || $features['categories'] || $features['concepts'])) {
                     // User requested to analyze at least one NLU feature for an
                     // existing corpus. Delete all existing NLU analyses before
                     // reanalyzing.
                     foreach ($taCorpus->getAnalyses() as $analysis) {
                         $analysis->delete();
                     }
+                }
+                if ($features['topic_model']) {
+                    // User requested the topic model feature for an existing
+                    // corpus. Remove all existing topic model data before
+                    // reanalyzing.
+                    $taCorpus->topic_keys = null;
+                    $taCorpus->doc_topics = null;
                 }
             } else {
                 $taCorpus = new TextAnalysisCorpus;
@@ -114,7 +170,8 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             $process = Omeka_Job_Process_Dispatcher::startProcess(
                 'Process_AnalyzeCorpus', null, array(
                     'text_analysis_corpus_id' => $taCorpus->id,
-                    'features' => $nluFeatures,
+                    'features' => $features,
+                    'stopwords' => $stopwords,
                     'item_cost_only' => $itemCostOnly,
                 )
             );
@@ -129,6 +186,11 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
             $this->_helper->redirector('index');
         }
 
+        $featureOptions = $this->getAvailableFeatures();
+        if (!$featureOptions) {
+            $this->_helper->redirector('browse');
+        }
+
         $corpora = $db->getTable('NgramCorpus')->findAll();
         $corporaOptions = array('Select Below');
         foreach ($corpora as $corpus) {
@@ -138,12 +200,7 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         }
 
         $this->view->corporaOptions = $corporaOptions;
-        $this->view->featureOptions = array(
-            'entities' => 'Entities',
-            'keywords' => 'Keywords',
-            'categories' => 'Categories',
-            'concepts' => 'Concepts',
-        );
+        $this->view->featureOptions = $featureOptions;
     }
 
     protected function getExportFilename($id, $sequenceMember = null)
@@ -151,5 +208,21 @@ class TextAnalysis_CorporaController extends Omeka_Controller_AbstractActionCont
         return $sequenceMember
             ? sprintf('text-analysis-%s-%s.json', $id, $sequenceMember)
             : sprintf('text-analysis-%s.json', $id);
+    }
+
+    protected function getAvailableFeatures() {
+        $features = array();
+        if (get_option('text_analysis_username') && get_option('text_analysis_password')) {
+            $features = array_merge($features, array(
+                'entities' => 'Entities (NLU)',
+                'keywords' => 'Keywords (NLU)',
+                'categories' => 'Categories (NLU)',
+                'concepts' => 'Concepts (NLU)',
+            ));
+        }
+        if (get_option('text_analysis_mallet_script_dir')) {
+            $features['topic_model'] = 'Topic Model (MALLET)';
+        }
+        return $features;
     }
 }

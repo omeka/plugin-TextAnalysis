@@ -5,6 +5,8 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
     public $corpus_id;
     public $process_id;
     public $item_cost;
+    public $topic_keys;
+    public $doc_topics;
 
     /**
      * Get the related Ngram corpus.
@@ -24,6 +26,16 @@ class TextAnalysisCorpus extends Omeka_Record_AbstractRecord
     public function getProcess()
     {
         return $this->getTable('Process')->find($this->process_id);
+    }
+
+    public function getTopicKeys()
+    {
+        return json_decode($this->topic_keys, true);
+    }
+
+    public function getDocTopics()
+    {
+        return json_decode($this->doc_topics, true);
     }
 
     public function getAnalyses($sequenceMember = null)

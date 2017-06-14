@@ -4,7 +4,8 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
     public function run($args)
     {
         $taCorpusId = $args['text_analysis_corpus_id'];
-        $argFeatures = $args['features'];
+        $features = $args['features'];
+        $stopwords = $args['stopwords'];
         $itemCostOnly = isset($args['item_cost_only']) ? (bool) $args['item_cost_only'] : false;
 
         $db = get_db();
@@ -12,18 +13,31 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
         $corpus = $taCorpus->getCorpus();
 
         // Limit analysis to the requested features.
-        $features = array();
-        if ($argFeatures['entities']) {
-            $features['entities'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
+        $nluFeatures = array();
+        if ($features['entities']) {
+            $nluFeatures['entities'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
         }
-        if ($argFeatures['keywords']) {
-            $features['keywords'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
+        if ($features['keywords']) {
+            $nluFeatures['keywords'] = array('sentiment' => true, 'emotion' => true, 'limit' => 50);
         }
-        if ($argFeatures['categories']) {
-            $features['categories'] = array();
+        if ($features['categories']) {
+            $nluFeatures['categories'] = array();
         }
-        if ($argFeatures['concepts']) {
-            $features['concepts'] = array();
+        if ($features['concepts']) {
+            $nluFeatures['concepts'] = array();
+        }
+        $doTopicModel = (bool) $features['topic_model'];
+        if ($doTopicModel) {
+            try {
+                $topicModel = new TextAnalysis_MalletTopicModel(
+                    realpath(sprintf('%s/mallet', get_option('text_analysis_mallet_script_dir'))),
+                    realpath(sprintf('%s/../../mallet_processing', __DIR__))
+                );
+            } catch (Exception $e) {
+                echo $e->getMessage();
+                $doTopicModel = false;
+            }
+            $topicModel->setExtraStopwords($stopwords);
         }
 
         $watsonNlu = new TextAnalysis_WatsonNlu(
@@ -67,11 +81,16 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                         $itemTexts[] = $db->query($selectTextSql, $itemId)->fetchColumn(0);
                     }
                     $text = implode(PHP_EOL, $itemTexts);
-                    $itemCost += $watsonNlu->getItemCost($text, $features);
-                    if (!$itemCostOnly) {
-                        $response = $watsonNlu->combined($text, $features);
-                        $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
-                        $db->query($insertAnalysisSql, array($sequenceMember, $analysis));
+                    if ($nluFeatures) {
+                        $itemCost += $watsonNlu->getItemCost($text, $nluFeatures);
+                        if (!$itemCostOnly) {
+                            $response = $watsonNlu->combined($text, $nluFeatures);
+                            $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
+                            $db->query($insertAnalysisSql, array($sequenceMember, $analysis));
+                        }
+                    }
+                    if ($doTopicModel) {
+                        $topicModel->addInstance($sequenceMember, $text);
                     }
                 }
             } else {
@@ -81,14 +100,39 @@ class Process_AnalyzeCorpus extends Omeka_Job_Process_AbstractProcess
                     $itemTexts[] = $db->query($selectTextSql, $itemId)->fetchColumn(0);
                 }
                 $text = implode(PHP_EOL, $itemTexts);
-                $itemCost += $watsonNlu->getItemCost($text, $features);
-                if (!$itemCostOnly) {
-                    $response = $watsonNlu->combined(implode(PHP_EOL, $itemTexts), $features);
-                    $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
-                    $db->query($insertAnalysisSql, array(null, $analysis));
+                if ($nluFeatures) {
+                    $itemCost += $watsonNlu->getItemCost($text, $nluFeatures);
+                    if (!$itemCostOnly) {
+                        $response = $watsonNlu->combined(implode(PHP_EOL, $itemTexts), $nluFeatures);
+                        $analysis = json_encode(json_decode($response->getBody())); // remove unneeded whitespace
+                        $db->query($insertAnalysisSql, array(null, $analysis));
+                    }
+                }
+                if ($doTopicModel) {
+                    $topicModel->addInstance('instance', $text);
                 }
             }
-            $taCorpus->item_cost = $itemCost;
+            if ($doTopicModel) {
+                $topicModel->buildTopicModel();
+
+                // Format results for better retrieval.
+                $topicKeys = array();
+                foreach ($topicModel->getTopicKeys() as $topicKey) {
+                    $topicKeys[$topicKey[0]] = $topicKey[2];
+                }
+                $docTopics = array();
+                foreach ($topicModel->getDocTopics() as $docTopic) {
+                    $sequenceMember = basename($docTopic[1]);
+                    $docTopics[$sequenceMember] = array_slice($docTopic, 2);
+                }
+                ksort($docTopics);
+
+                $taCorpus->topic_keys = json_encode($topicKeys, JSON_FORCE_OBJECT);
+                $taCorpus->doc_topics = json_encode($docTopics, JSON_FORCE_OBJECT);
+            }
+            if ($nluFeatures) {
+                $taCorpus->item_cost = $itemCost;
+            }
             $taCorpus->save();
             $db->commit();
         } catch (Exception $e) {

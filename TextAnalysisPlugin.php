@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS `{$db->prefix}text_analysis_corpus` (
   `corpus_id` int(10) UNSIGNED DEFAULT NULL,
   `process_id` int(10) UNSIGNED DEFAULT NULL,
   `item_cost` int(10) UNSIGNED DEFAULT NULL,
+  `topic_keys` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL,
+  `doc_topics` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `corpus_id` (`corpus_id`),
   UNIQUE KEY `process_id` (`process_id`)
@@ -61,6 +63,7 @@ SQL
         delete_option('text_analysis_alchemyapi_key');
         delete_option('text_analysis_username');
         delete_option('text_analysis_password');
+        delete_option('text_analysis_mallet_script');
     }
 
     public function hookUpgrade($args)
@@ -125,6 +128,23 @@ ALTER TABLE `{$db->prefix}text_analysis_corpus`
 SQL
             );
         }
+
+        if (version_compare($args['old_version'], '2.3', '<=')) {
+            $db->query(<<<SQL
+ALTER TABLE `{$db->prefix}text_analysis_corpus`
+  ADD `topic_keys` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL,
+  ADD `doc_topics` mediumtext COLLATE utf8_unicode_ci DEFAULT NULL;
+SQL
+            );
+        }
+
+        if (version_compare($args['old_version'], '2.4', '<=')) {
+            $malletCmdDir = get_option('text_analysis_mallet_cmd_dir');
+            if ($malletCmdDir) {
+                delete_option('text_analysis_mallet_cmd_dir');
+                set_option('text_analysis_mallet_script_dir', $malletCmdDir);
+            }
+        }
     }
 
     public function hookConfigForm()
@@ -137,6 +157,19 @@ SQL
     {
         set_option('text_analysis_username', $args['post']['username']);
         set_option('text_analysis_password', $args['post']['password']);
+
+        $malletScriptDir = trim($args['post']['mallet_script_dir']);
+        if ($malletScriptDir) {
+            $malletScript = sprintf('%s/mallet', $malletScriptDir);
+            if (is_executable($malletScript)) {
+                set_option('text_analysis_mallet_script_dir', $malletScriptDir);
+            } else {
+                delete_option('text_analysis_mallet_script_dir');
+                throw new Omeka_Validate_Exception('The MALLET script directory is invalid. Make sure the directory contains the MALLET script and that the script is executable by the web server.');
+            }
+        } else {
+            delete_option('text_analysis_mallet_script_dir');
+        }
     }
 
     public function hookDefineAcl($args)
@@ -152,7 +185,7 @@ SQL
     {
         if (plugin_is_active('Ngram')) {
             $nav[] = array(
-                'label' => __('Text Analysis: Corpora'),
+                'label' => __('Text Analysis'),
                 'uri' => url('text-analysis/corpora'),
                 'resource' => ('TextAnalysis_Corpora'),
             );
